@@ -1,0 +1,39 @@
+node_modules/
+
+# Build output
+dist/
+out/
+release/
+
+# OS
+.DS_Store
+
+# Logs
+*.log
+
+# Playwright reports
+test-results/
+playwright-report/
+blob-report/
+
+# Environment
+.env
+.env.*
+
+# Export template build artifacts
+export-app-template/node_modules/
+export-app-template/dist/
+export-app-template/note-viewer.css
+
+# Local config — copy auth-config.example.json to auth-config.json and fill in.
+auth-config.json
+
+# Note-internal storage (SQLite files — binary, unmergeable)
+**/storage/*.sqlite
+**/storage/*.sqlite-wal
+**/storage/*.sqlite-shm
+
+# Claude config
+.claude/
+CLAUDE.md
+

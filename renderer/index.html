@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>ToutKit</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="vendor/github-dark.min.css" />
+</head>
+<body>
+  <!-- Welcome screen (no workspace open) -->
+  <div id="welcome">
+    <div class="welcome-inner">
+      <h1>ToutKit</h1>
+      <p>Anything you're curious about becomes your own interactive page.</p>
+      <button id="btn-create" class="btn-primary">Create New Project</button>
+      <button id="btn-open" class="btn-secondary">Open Existing Folder</button>
+    </div>
+  </div>
+
+  <!-- Init confirmation modal (for both create & open) -->
+  <div id="init-modal" class="hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-box glass">
+      <h2 id="modal-title">Project Setup</h2>
+      <p id="modal-desc">We suggest initializing these for your project, but both are optional.</p>
+      <div id="project-fields" class="hidden">
+        <label class="field-label" for="project-dir">Project location</label>
+        <div class="browse-row">
+          <input type="text" id="project-dir" readonly placeholder="Choose a directory..." />
+          <button type="button" id="btn-browse">Browse</button>
+        </div>
+        <label class="field-label" for="project-name">Project name</label>
+        <input type="text" id="project-name" placeholder="my-notes" autocomplete="off" />
+        <p id="project-path-preview" class="field-hint"></p>
+      </div>
+      <label class="checkbox-row">
+        <input type="checkbox" id="chk-claude" checked />
+        <span>Initialize AI project</span>
+      </label>
+      <p class="checkbox-hint">Adds note-writing instructions for the AI assistant.</p>
+      <label class="checkbox-row">
+        <input type="checkbox" id="chk-git" checked />
+        <span>Initialize Git repository</span>
+      </label>
+      <p class="checkbox-hint">Enables local version control to track changes to your notes.</p>
+      <div class="modal-actions">
+        <button id="modal-cancel" class="btn-secondary">Cancel</button>
+        <button id="modal-confirm" class="btn-primary">Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Unified Sync Settings modal -->
+  <div id="sync-settings-modal" class="hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-box sync-settings-box glass">
+      <div class="sync-settings-header">
+        <h2>Sync Settings</h2>
+        <button class="sync-settings-close" id="sync-settings-close" title="Close">&times;</button>
+      </div>
+      <div class="sync-settings-body">
+        <nav class="sync-settings-tabs" id="sync-settings-tabs">
+          <button class="sync-tab sync-tab--active" data-tab="github">
+            <span class="sync-tab-name">GitHub</span>
+            <span class="sync-tab-status" id="sync-tab-status-github"></span>
+          </button>
+          <button class="sync-tab" data-tab="server">
+            <span class="sync-tab-name">SSH / SFTP</span>
+            <span class="sync-tab-status" id="sync-tab-status-server"></span>
+          </button>
+        </nav>
+        <div class="sync-settings-content" id="sync-settings-content">
+          <!-- Tab content rendered dynamically by JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sync setup wizard modal (feature 68) -->
+  <div id="sync-setup-modal" class="hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-box sync-setup-box glass">
+      <h2 id="sync-wizard-title">Set Up Sync</h2>
+      <div class="sync-setup-steps">
+        <span class="sync-step" data-step="1">1</span>
+        <span class="sync-step-line"></span>
+        <span class="sync-step" data-step="2">2</span>
+        <span class="sync-step-line"></span>
+        <span class="sync-step" data-step="3">3</span>
+        <span class="sync-step-line"></span>
+        <span class="sync-step" data-step="4">4</span>
+      </div>
+      <div id="sync-step-content"></div>
+      <div class="modal-actions sync-wizard-actions">
+        <button id="sync-back" class="btn-secondary">Back</button>
+        <div style="flex:1"></div>
+        <button id="sync-cancel" class="btn-secondary">Cancel</button>
+        <button id="sync-next" class="btn-primary">Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AWS Sync unlink confirmation modal -->
+  <div id="aws-sync-unlink-modal" class="hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-box aws-sync-unlink-box glass">
+      <h2>Unlink Cloud Sync</h2>
+      <p class="aws-sync-unlink-body">Choose what to remove. Your local notes are never deleted.</p>
+      <label class="checkbox-row">
+        <input type="checkbox" id="aws-sync-unlink-local" checked />
+        <span>Clear local sync state</span>
+      </label>
+      <label class="checkbox-row">
+        <input type="checkbox" id="aws-sync-unlink-cloud" />
+        <span>Delete data stored in the cloud</span>
+      </label>
+      <p class="aws-sync-unlink-warning">If other devices sync to this account, they will lose access to cloud data.</p>
+      <div class="modal-actions aws-sync-unlink-actions">
+        <button id="aws-sync-unlink-cancel" class="btn-secondary">Cancel</button>
+        <button id="aws-sync-unlink-confirm" class="aws-sync-unlink-danger-btn">Unlink</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AWS Sync first-run consent modal (feature 149) -->
+  <div id="aws-sync-consent-modal" class="hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-box aws-sync-consent-box glass">
+      <h2>Enable Cloud Sync?</h2>
+      <p class="aws-sync-consent-body">
+        Your notes will be synced to the cloud, making them accessible
+        from your other devices. You can change this at any time from the
+        sync controls.
+      </p>
+      <div class="modal-actions aws-sync-consent-actions">
+        <button id="aws-sync-consent-skip" class="btn-secondary">Not Now</button>
+        <button id="aws-sync-consent-enable" class="btn-primary">Enable Sync</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sync conflict resolution modal -->
+  <div id="conflict-resolve-modal" class="hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-box conflict-resolve-box glass">
+      <div class="conflict-resolve-header">
+        <div class="conflict-resolve-titlerow">
+          <h2>Sync conflict</h2>
+          <span id="conflict-resolve-remaining" class="conflict-resolve-remaining"></span>
+        </div>
+        <p id="conflict-resolve-filepath" class="conflict-resolve-filepath"></p>
+        <p class="conflict-resolve-hint">This note was edited on two devices. Review both versions and choose what to keep.</p>
+      </div>
+      <div class="conflict-resolve-body">
+        <div class="conflict-pane">
+          <div class="conflict-pane-header">
+            <div class="conflict-pane-title">
+              <span class="conflict-pane-badge conflict-pane-badge--mine">Your version</span>
+              <span id="conflict-local-title" class="conflict-pane-notename"></span>
+            </div>
+            <div id="conflict-local-meta" class="conflict-pane-meta"></div>
+          </div>
+          <iframe id="conflict-local-preview" class="conflict-pane-preview" sandbox=""></iframe>
+        </div>
+        <div class="conflict-pane">
+          <div class="conflict-pane-header">
+            <div class="conflict-pane-title">
+              <span class="conflict-pane-badge conflict-pane-badge--theirs">Server version</span>
+              <span id="conflict-remote-title" class="conflict-pane-notename"></span>
+            </div>
+            <div id="conflict-remote-meta" class="conflict-pane-meta"></div>
+          </div>
+          <iframe id="conflict-remote-preview" class="conflict-pane-preview" sandbox=""></iframe>
+        </div>
+      </div>
+      <div class="modal-actions conflict-resolve-actions">
+        <button id="conflict-resolve-cancel" class="btn-secondary conflict-resolve-cancel">Decide later</button>
+        <div class="conflict-resolve-primary-actions">
+          <button id="conflict-keep-both" class="btn-secondary">Keep both</button>
+          <button id="conflict-keep-remote" class="btn-secondary">Keep server</button>
+          <button id="conflict-keep-local" class="btn-primary">Keep mine</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Server Sync (SSH/SFTP) configuration modal -->
+  <div id="server-sync-modal" class="hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-box server-sync-modal-box glass">
+      <h2>Server Sync (SFTP)</h2>
+      <p>Sync workspace files between your local workspace and remote OpenClaw servers via SSH/SFTP. No server-side setup needed &mdash; any server with SSH access works.</p>
+      <div class="ssm-overview">
+        <button type="button" class="oc-help-btn" id="ssm-overview-toggle" title="How it works">?</button>
+        <span class="ssm-overview-label">How does it work?</span>
+      </div>
+      <div id="ssm-overview-panel" class="oc-help-panel hidden">
+        <div class="oc-help-content">
+          <p><strong>Automatic two-way sync</strong> &mdash; changed files are pushed to the server after a short delay. A full sync runs every 5 minutes to pull new or modified files from the server.</p>
+          <p><strong>Conflict handling</strong> &mdash; if the same file is edited on both sides, the server version is saved as <code>filename.conflict.{timestamp}.html</code> and a yellow banner appears so you can choose which version to keep.</p>
+          <p><strong>First sync</strong> &mdash; files that exist only on one side are copied to the other. Files that exist on both sides with different content create a conflict so you can review them.</p>
+          <p><strong>What gets synced</strong> &mdash; all workspace files except those matching patterns in <code>.syncignore</code> (uses <code>.gitignore</code> syntax). Default exclusions: <code>.git/</code>, <code>.notes-app/</code>, <code>node_modules/</code>.</p>
+          <p><strong>SSH Agent on macOS</strong> &mdash; if the app is launched from Finder, <code>SSH_AUTH_SOCK</code> may not be set. If the agent method fails, try specifying a key path instead, or launch the app from the terminal.</p>
+        </div>
+      </div>
+      <div id="server-sync-modal-list"></div>
+      <div class="modal-actions">
+        <button id="server-sync-modal-close" class="btn-secondary">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AWS Sync settings modal (replaces old AWS popover) -->
+  <div id="aws-sync-settings-modal" class="hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-box aws-sync-settings-box glass">
+      <h2>Cloud Sync (AWS S3)</h2>
+      <div class="aws-settings-status">
+        <span id="aws-settings-status-text" class="aws-settings-status-text">Off</span>
+      </div>
+      <label class="aws-settings-row checkbox-row">
+        <input type="checkbox" id="aws-settings-enable-toggle">
+        <span>Enable sync</span>
+      </label>
+      <div id="aws-settings-controls" class="aws-settings-controls hidden">
+        <button id="aws-settings-pause-btn" class="aws-settings-btn">Pause</button>
+        <button id="aws-settings-sync-now-btn" class="aws-settings-btn">Sync Now</button>
+        <button id="aws-settings-unlink-btn" class="aws-settings-btn aws-settings-btn--danger">Unlink</button>
+      </div>
+      <div id="aws-settings-syncignore" class="ssm-syncignore-section hidden">
+        <button type="button" class="ssm-syncignore-toggle">Sync Rules (.syncignore) <span class="ssm-syncignore-arrow">&#x25B6;</span></button>
+        <div class="ssm-syncignore-body hidden">
+          <textarea class="ssm-syncignore-textarea" rows="8" spellcheck="false" placeholder="Loading..."></textarea>
+          <button type="button" class="ssm-syncignore-save">Save</button>
+        </div>
+      </div>
+      <div class="aws-settings-footer">
+        <span id="aws-settings-last-sync" class="aws-settings-last-sync">Last sync: never</span>
+      </div>
+      <div class="modal-actions">
+        <button id="aws-settings-close-btn" class="btn-secondary">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sync recovery modal (feature 75) -->
+  <div id="sync-recovery-modal" class="hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-box sync-recovery-box glass">
+      <h2>Sync Problem Detected</h2>
+      <div id="sync-recovery-content"></div>
+      <div class="sync-recovery-footer">
+        <button id="sync-recovery-dismiss" class="btn-secondary">Dismiss</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Note Security Settings modal -->
+  <div id="security-settings-modal" class="hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-box security-settings-box glass">
+      <div class="security-settings-header">
+        <h2>Settings</h2>
+        <button class="security-settings-close" id="security-settings-close" title="Close">&times;</button>
+      </div>
+      <nav class="app-settings-tabs" id="app-settings-tabs">
+        <button class="app-settings-tab app-settings-tab--active" data-app-tab="security">Note Security</button>
+        <button class="app-settings-tab" data-app-tab="sharing">Sharing</button>
+      </nav>
+
+      <div class="app-settings-pane" data-app-pane="security">
+        <p class="security-settings-desc">
+          Controls what HTML notes can access. Changes apply to newly opened notes.
+        </p>
+
+        <!-- Allow filesystem access -->
+        <div class="security-row security-row--high">
+          <label class="security-toggle">
+            <input type="checkbox" id="sec-allow-file-access" />
+            <span class="security-toggle-label">Allow filesystem access</span>
+          </label>
+          <div class="security-warning security-warning--high">
+            <strong>High risk.</strong> Notes can read any file on your computer via file:// URLs, including credentials, keys, and personal documents.
+          </div>
+        </div>
+
+        <!-- Allow external network -->
+        <div class="security-row security-row--medium">
+          <label class="security-toggle">
+            <input type="checkbox" id="sec-allow-external-network" />
+            <span class="security-toggle-label">Allow external network</span>
+          </label>
+          <div class="security-warning security-warning--medium">
+            <strong>Medium risk.</strong> Notes can fetch data from the internet &mdash; load remote images, scripts, tracking pixels, or send data to external servers.
+          </div>
+        </div>
+
+        <!-- Allow navigation -->
+        <div class="security-row security-row--medium">
+          <label class="security-toggle">
+            <input type="checkbox" id="sec-allow-navigation" />
+            <span class="security-toggle-label">Allow navigation to external URLs</span>
+          </label>
+          <div class="security-warning security-warning--medium">
+            <strong>Medium risk.</strong> Notes can navigate the viewer away from note:// to external websites, which could be used for phishing or redirect attacks.
+          </div>
+        </div>
+
+        <!-- Allow popups -->
+        <div class="security-row security-row--low">
+          <label class="security-toggle">
+            <input type="checkbox" id="sec-allow-popups" />
+            <span class="security-toggle-label">Allow popup windows</span>
+          </label>
+          <div class="security-warning security-warning--low">
+            <strong>Low risk.</strong> Notes can open new browser windows. Could be used for annoyance or phishing.
+          </div>
+        </div>
+
+        <div class="security-apply-note">
+          Changes take effect when notes are reopened or new notes are loaded.
+        </div>
+
+        <div class="modal-actions">
+          <button id="security-settings-reset" class="btn-secondary">Reset to Defaults</button>
+          <div style="flex:1"></div>
+          <button id="security-settings-done" class="btn-secondary">Done</button>
+        </div>
+      </div>
+
+      <div class="app-settings-pane hidden" data-app-pane="sharing">
+        <div id="sharing-settings-body"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Clone synced project modal (feature 76) -->
+  <div id="clone-modal" class="hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-box clone-box glass">
+      <h2>Clone Synced Project</h2>
+      <p class="clone-desc">Enter the URL of your synced GitHub repository and choose where to clone it.</p>
+
+      <label class="field-label" for="clone-remote-url">Repository URL</label>
+      <input type="text" id="clone-remote-url"
+        placeholder="https://github.com/user/repo.git" autocomplete="off" />
+
+      <label class="field-label" for="clone-target-dir">Clone into folder</label>
+      <div class="browse-row">
+        <input type="text" id="clone-target-dir" readonly placeholder="Choose a parent folder..." />
+        <button type="button" id="clone-browse">Browse</button>
+      </div>
+      <p id="clone-path-preview" class="field-hint hidden"></p>
+      <p id="clone-dir-warning" class="field-hint clone-warning hidden"></p>
+
+      <div id="clone-auth-guidance" class="sync-guidance hidden"></div>
+      <div id="clone-progress" class="clone-progress hidden">
+        <span class="spinner"></span>
+        <span id="clone-progress-text">Cloning repository…</span>
+      </div>
+      <p id="clone-error" class="sync-step-error hidden"></p>
+
+      <div class="modal-actions">
+        <button id="clone-cancel" class="btn-secondary">Cancel</button>
+        <button id="clone-confirm" class="btn-primary" disabled>Clone</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="template-picker-modal" class="hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-box template-picker-box glass">
+      <h2>Choose a template</h2>
+      <ul id="template-picker-list" class="template-picker-list">
+        <!-- Populated dynamically -->
+      </ul>
+      <div class="template-picker-actions">
+        <button id="template-picker-cancel" class="btn-ghost">Cancel</button>
+        <button id="template-picker-confirm" class="btn-primary">Use this template</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="save-template-modal" class="hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-box save-template-box glass">
+      <h2>Save as Template</h2>
+      <label class="field-label" for="save-template-name">Template name</label>
+      <input type="text" id="save-template-name" autocomplete="off" spellcheck="false" />
+      <p id="save-template-validation" class="save-template-validation hidden"></p>
+      <div class="modal-actions">
+        <button id="save-template-cancel" class="btn-secondary">Cancel</button>
+        <button id="save-template-confirm" class="btn-primary">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="publish-modal" class="hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-box publish-modal-box glass">
+      <h2 id="publish-modal-title">Share to web</h2>
+      <p class="publish-note-name" id="publish-note-name"></p>
+      <div id="publish-modal-body"></div>
+      <div class="modal-actions" id="publish-modal-actions"></div>
+    </div>
+  </div>
+
+  <div id="repo-confirm-modal" class="hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-box repo-confirm-box glass">
+      <h2>Create new repo?</h2>
+      <p class="repo-confirm-availability">
+        <code id="repo-confirm-name"></code>
+        <span>is available on your account.</span>
+      </p>
+
+      <fieldset class="repo-confirm-options">
+        <label class="repo-confirm-option">
+          <input type="radio" name="repo-confirm-mode" value="provision-now" checked />
+          <div class="repo-confirm-option-text">
+            <div class="repo-confirm-option-name">Create it now</div>
+            <div class="repo-confirm-option-desc">We'll create the repo and enable Pages now (one-time, ~30 seconds).</div>
+          </div>
+        </label>
+        <label class="repo-confirm-option">
+          <input type="radio" name="repo-confirm-mode" value="save-only" />
+          <div class="repo-confirm-option-text">
+            <div class="repo-confirm-option-name">Save the name for later</div>
+            <div class="repo-confirm-option-desc">Just remember the name. Your next publish will create the repo automatically.</div>
+          </div>
+        </label>
+      </fieldset>
+
+      <div class="modal-actions">
+        <button class="sharing-tab-link-btn" data-repo-confirm-action="pick-different">Pick a different name</button>
+        <div style="flex:1"></div>
+        <button class="btn-secondary" data-repo-confirm-action="pick-different">Cancel</button>
+        <button class="btn-primary" data-repo-confirm-action="confirm">Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Graph View Modal (feature 127) -->
+  <div id="graph-modal" class="hidden">
+    <div class="modal-backdrop"></div>
+    <div class="graph-container glass">
+      <div class="graph-header">
+        <span class="graph-title">Graph View</span>
+        <button id="graph-close-btn" class="graph-close-btn" title="Close (Esc)">&times;</button>
+      </div>
+      <div id="graph-canvas"></div>
+    </div>
+  </div>
+
+  <!-- Endpoints settings modal (feature 130) -->
+  <div id="endpoints-modal" class="hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-box endpoints-box glass">
+      <div class="endpoints-header">
+        <h2>Endpoint Settings</h2>
+        <button class="endpoints-close" title="Close">&times;</button>
+      </div>
+
+      <!-- List view -->
+      <div id="endpoints-list-view">
+        <div class="endpoints-section-label">OpenClaw Remotes</div>
+        <div id="oc-remotes-inline-section">
+          <div id="oc-remotes-list-inline"></div>
+          <button id="oc-add-remote-inline" class="btn-secondary">+ Add Remote</button>
+        </div>
+        <hr class="endpoints-section-divider" />
+        <div class="endpoints-section-label">Custom Endpoints</div>
+        <div id="endpoints-list"></div>
+        <div class="endpoints-quick-add hidden">
+          <div class="endpoints-quick-add-label">Quick Add</div>
+          <div id="endpoints-presets"></div>
+        </div>
+        <button id="endpoints-add-custom" class="btn-secondary">+ Add Custom Endpoint</button>
+        <hr class="endpoints-section-divider" />
+        <div class="endpoints-section-label">API Key Overrides</div>
+        <div id="unset-api-keys-section" style="margin-top:0">
+          <p class="checkbox-hint" style="margin:0 0 8px 0">Remove inherited API keys so providers use subscription/OAuth auth instead.</p>
+          <label class="checkbox-row">
+            <input type="checkbox" id="chk-unset-anthropic" checked />
+            <span>Unset ANTHROPIC_API_KEY</span>
+          </label>
+          <label class="checkbox-row">
+            <input type="checkbox" id="chk-unset-openai" checked />
+            <span>Unset OPENAI_API_KEY</span>
+          </label>
+          <label class="checkbox-row">
+            <input type="checkbox" id="chk-unset-gemini" checked />
+            <span>Unset GEMINI_API_KEY</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Edit view (hidden by default) -->
+      <div id="endpoints-edit-view" class="hidden">
+        <button class="endpoints-back">&larr; Back to list</button>
+        <div class="endpoints-form">
+          <label>Label
+            <input type="text" id="ep-label" required autocomplete="off" />
+          </label>
+          <label>Base URL
+            <input type="text" id="ep-url" placeholder="http://localhost:11434/v1" required autocomplete="off" />
+          </label>
+          <label>API Key
+            <div class="ep-key-row">
+              <input type="password" id="ep-key" placeholder="Optional" autocomplete="off" />
+              <button type="button" class="ep-key-toggle" title="Show / hide">&#128065;</button>
+            </div>
+          </label>
+          <label>Default Model
+            <div class="ep-model-row">
+              <select id="ep-model"><option value="">— select model —</option></select>
+              <input type="text" id="ep-model-text" class="hidden" placeholder="e.g. gpt-4o" autocomplete="off" />
+              <button type="button" id="ep-fetch-models">Fetch Models</button>
+            </div>
+          </label>
+          <div id="ep-fetch-error" class="ep-fetch-error hidden"></div>
+          <div id="ep-test-area">
+            <button type="button" id="ep-test" class="btn-secondary">Test Connection</button>
+            <div id="ep-test-result" class="hidden"></div>
+          </div>
+          <div id="ep-form-error" class="ep-form-error hidden"></div>
+          <div class="endpoints-form-actions">
+            <button id="ep-cancel" class="btn-ghost">Cancel</button>
+            <button id="ep-save" class="btn-primary">Save</button>
+          </div>
+          <div id="ep-reset-row" class="hidden">
+            <button id="ep-reset" class="btn-link">Reset to preset defaults</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- OpenClaw Remote edit view (hidden by default) -->
+      <div id="oc-remotes-edit-view" class="hidden">
+        <button class="endpoints-back" id="oc-back-to-list">&larr; Back to list</button>
+        <div class="endpoints-form">
+          <label>Label
+            <input type="text" id="oc-label" required autocomplete="off" />
+          </label>
+          <label>
+            <span class="oc-label-row">WebSocket URL <button type="button" class="oc-help-btn" data-help="oc-help-url" title="How to find your URL">?</button></span>
+            <input type="text" id="oc-url" placeholder="wss://my-server.com" required autocomplete="off" />
+          </label>
+          <div id="oc-help-url" class="oc-help-panel hidden">
+            <div class="oc-help-content">
+              <p>The WebSocket address of your OpenClaw gateway. Default port is <strong>18789</strong>.</p>
+              <table class="oc-help-table">
+                <tr><td>Domain + reverse proxy (Caddy, nginx)</td><td><code>wss://your-domain.com</code></td></tr>
+                <tr><td>Direct IP on a VPS or home server</td><td><code>ws://203.0.113.10:18789</code></td></tr>
+                <tr><td>Tailscale / private network</td><td><code>ws://my-machine:18789</code></td></tr>
+                <tr><td>SSH tunnel<br><code class="oc-help-dim">ssh -L 18789:localhost:18789 user@server</code></td><td><code>ws://localhost:18789</code></td></tr>
+              </table>
+              <p>Use <strong>wss://</strong> when your server has TLS (HTTPS). Use <strong>ws://</strong> for local or tunneled connections.</p>
+            </div>
+          </div>
+          <label>
+            <span class="oc-label-row">Gateway Token <span class="oc-optional-hint">(optional)</span> <button type="button" class="oc-help-btn" data-help="oc-help-token" title="Where to find your token">?</button></span>
+            <div class="ep-key-row">
+              <input type="password" id="oc-token" placeholder="Leave blank if not required" autocomplete="off" />
+              <button type="button" class="oc-token-toggle" title="Show / hide">&#128065;</button>
+            </div>
+          </label>
+          <div id="oc-help-token" class="oc-help-panel hidden">
+            <div class="oc-help-content">
+              <p>Only needed if your OpenClaw server has <code>OPENCLAW_GATEWAY_TOKEN</code> configured.</p>
+              <p><strong>How to find it:</strong></p>
+              <ol>
+                <li>SSH into your server</li>
+                <li>Open <code>~/.openclaw/openclaw.json</code></li>
+                <li>Copy the value at <code>gateway.auth.token</code></li>
+              </ol>
+              <p>If using Docker, check the <code>OPENCLAW_GATEWAY_TOKEN</code> environment variable in your <code>docker-compose.yml</code> or <code>.env</code> file.</p>
+              <p>If your server doesn't require a gateway token, leave this blank.</p>
+            </div>
+          </div>
+          <div id="oc-test-area">
+            <button type="button" id="oc-test" class="btn-secondary">Test Connection</button>
+            <div id="oc-test-result" class="hidden"></div>
+          </div>
+
+          <div id="oc-form-error" class="ep-form-error hidden"></div>
+          <div class="endpoints-form-actions">
+            <button id="oc-cancel" class="btn-ghost">Cancel</button>
+            <button id="oc-save" class="btn-primary">Save</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Main app (workspace open) -->
+  <div id="app" class="hidden">
+    <div id="title-bar">
+      <div class="title-bar-left"></div>
+      <div class="title-bar-center"></div>
+      <div class="title-bar-right">
+        <div id="title-bar-split-actions" class="title-bar-split-actions"></div>
+        <button id="theme-toggle" class="theme-toggle-btn" title="Toggle theme" aria-label="Toggle theme">
+          <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z"/></svg>
+        </button>
+        <button id="settings-btn" class="settings-btn" title="Settings" aria-label="Settings">
+          <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0"/><path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.421 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.421-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.116z"/></svg>
+        </button>
+      </div>
+    </div>
+    <div id="app-body">
+    <!-- Sidebar -->
+    <aside id="sidebar">
+      <div class="sidebar-header">
+        <span id="workspace-name">Workspace</span>
+        <div class="sidebar-more-wrap">
+          <button id="sidebar-more-btn" class="sidebar-more-btn" title="More actions">
+            <svg fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><circle cx="3" cy="8" r="1.5"/><circle cx="8" cy="8" r="1.5"/><circle cx="13" cy="8" r="1.5"/></svg>
+          </button>
+          <div id="sidebar-more-menu" class="sidebar-more-menu glass hidden">
+            <div class="sidebar-menu-item sidebar-menu-sub-wrap" id="sidebar-menu-sort">
+              <span>Sort by</span>
+              <svg class="sidebar-menu-arrow" viewBox="0 0 10 10" fill="currentColor"><path d="M3 2l4 3-4 3z"/></svg>
+              <div class="sidebar-sub-menu glass">
+                <div class="sidebar-menu-item" data-sort="name"><span class="sort-check"></span>Name</div>
+                <div class="sidebar-menu-item" data-sort="mtime"><span class="sort-check"></span>Date modified</div>
+                <div class="sidebar-menu-item" data-sort="type"><span class="sort-check"></span>File type</div>
+              </div>
+            </div>
+            <div class="sidebar-menu-item" id="menu-expand-all">Expand all</div>
+            <div class="sidebar-menu-item" id="menu-collapse-all">Collapse all</div>
+            <div class="sidebar-menu-item" id="menu-change-workspace">Change workspace</div>
+          </div>
+        </div>
+      </div>
+      <div class="sidebar-search">
+        <svg class="search-icon-static" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/></svg>
+        <input type="text" id="search-input" placeholder="Search files and content…" autocomplete="off" spellcheck="false" />
+        <button type="button" id="search-clear" class="search-clear hidden" aria-label="Clear search">×</button>
+      </div>
+      <div id="tag-filter-bar" class="tag-filter-bar hidden" role="status" aria-live="polite">
+        <span class="tag-filter-bar-label">Tags: <span id="tag-filter-bar-name"></span> <span id="tag-filter-bar-count" class="tag-filter-bar-count"></span></span>
+        <button type="button" id="tag-filter-clear" class="tag-filter-clear" aria-label="Clear tag filter">×</button>
+      </div>
+      <!-- Favorites section (feature 120) -->
+      <div id="favorites-section" class="favorites-section hidden">
+        <div class="favorites-section-header" id="favorites-section-header"
+             role="button" tabindex="0" aria-expanded="true" aria-controls="favorites-section-body">
+          <span class="favorites-section-title">Favorites</span>
+          <span id="favorites-count-badge" style="display:none"></span>
+          <span class="section-chevron expanded" id="favorites-section-toggle" aria-hidden="true">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708"/></svg>
+          </span>
+        </div>
+        <div class="favorites-section-body" id="favorites-section-body">
+          <ul class="favorites-list" id="favorites-list" role="list" aria-label="Favorite notes"></ul>
+        </div>
+      </div>
+      <!-- Notes section -->
+      <div id="notes-section" class="notes-section">
+        <div class="notes-section-header" id="notes-section-header"
+             role="button" tabindex="0" aria-expanded="true" aria-controls="notes-section-body">
+          <span class="notes-section-title" id="notes-section-title">Notes</span>
+          <span class="section-chevron expanded" id="notes-section-toggle" aria-hidden="true">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708"/></svg>
+          </span>
+          <span class="notes-section-count" id="notes-count-badge" aria-label="notes count" style="display:none"></span>
+        </div>
+        <div class="notes-section-body" id="notes-section-body">
+          <ul id="note-list"></ul>
+        </div>
+      </div>
+
+      <!-- Tags section (feature 98) -->
+      <div id="tags-section" class="tags-section">
+        <div class="tags-section-header" id="tags-section-header"
+             role="button" tabindex="0" aria-expanded="true" aria-controls="tags-section-body">
+          <span class="tags-section-icon" aria-hidden="true">
+            <svg fill="currentColor" viewBox="0 0 16 16"><path d="M3 2v4.586l7 7L14.586 9l-7-7zM2 2a1 1 0 0 1 1-1h4.586a1 1 0 0 1 .707.293l7 7a1 1 0 0 1 0 1.414l-4.586 4.586a1 1 0 0 1-1.414 0l-7-7A1 1 0 0 1 2 6.586z"/><path d="M4.5 5a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1m0 1a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/></svg>
+          </span>
+          <span class="tags-section-title">Tags</span>
+          <span class="tags-section-count" id="tags-count-badge" aria-label="tag count" style="display:none"></span>
+          <span class="tags-logic-segmented" id="tags-logic-toggle" role="radiogroup" aria-label="Filter logic">
+            <button type="button" class="logic-seg active" data-logic="AND"
+                    title="Show notes matching ALL selected tags" aria-label="AND filter mode">AND</button>
+            <button type="button" class="logic-seg" data-logic="OR"
+                    title="Show notes matching ANY selected tag" aria-label="OR filter mode">OR</button>
+          </span>
+          <button type="button" class="tags-sort-toggle" id="tags-sort-btn"
+                  title="Sort alphabetically" aria-label="Toggle tag sort order">A–Z</button>
+          <span class="section-chevron expanded" id="tags-section-toggle" aria-hidden="true">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708"/></svg>
+          </span>
+        </div>
+        <div class="tags-section-body" id="tags-section-body">
+          <div class="tags-empty" id="tags-empty">No tags yet</div>
+          <ul class="tags-list" id="tags-list" role="listbox" aria-label="Filter notes by tag"></ul>
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <div id="index-progress" class="index-progress hidden">
+          <span class="spinner"></span>
+          <span id="index-progress-text">Indexing notes…</span>
+        </div>
+
+        <!-- Auth section (feature 141) -->
+        <div id="auth-section" class="auth-section">
+          <div id="auth-logged-out" class="auth-logged-out hidden">
+          </div>
+          <div id="auth-logged-in" class="auth-logged-in hidden">
+            <span class="auth-user-icon" aria-hidden="true">
+              <svg viewBox="0 0 12 12" fill="currentColor"><circle cx="6" cy="4" r="3"/><path d="M0 11c0-3.3 2.7-6 6-6s6 2.7 6 6H0z"/></svg>
+            </span>
+            <span id="auth-user-email" class="auth-user-email" title=""></span>
+            <button id="auth-signout-btn" class="auth-signout-btn" title="Sign out">Sign out</button>
+          </div>
+          <div id="auth-error" class="auth-error hidden"></div>
+        </div>
+
+        <!-- Unified Sync Status Indicator -->
+        <div id="unified-sync" class="unified-sync unified-sync--off">
+          <button id="unified-sync-bar" class="unified-sync-bar" title="Sync status">
+            <span class="unified-sync-icon" id="unified-sync-icon">
+              <!-- per-method dots injected by _render() -->
+            </span>
+            <span class="unified-sync-label" id="unified-sync-label">Set up sync</span>
+            <span class="unified-sync-more" id="unified-sync-more" aria-label="Sync menu">⋯</span>
+          </button>
+
+          <div id="unified-sync-dropdown" class="unified-sync-dropdown glass hidden">
+            <div class="usd-header">
+              <span class="usd-status-dot" id="usd-status-dot"></span>
+              <span class="usd-status-text" id="usd-status-text">Off</span>
+              <button class="usd-header-gear" id="usd-header-gear" title="Sync settings">⚙</button>
+            </div>
+            <div class="usd-last-sync" id="usd-last-sync">Last synced: never</div>
+            <div class="usd-divider"></div>
+            <div class="usd-section-label">Sync Methods</div>
+            <div class="usd-method" id="usd-method-git" data-method="git">
+              <span class="usd-method-check" id="usd-git-check"></span>
+              <span class="usd-method-name">GitHub</span>
+              <span class="usd-method-status" id="usd-git-status">Not set up</span>
+              <button class="usd-method-gear" id="usd-git-gear" title="GitHub sync settings">⚙</button>
+            </div>
+            <div class="usd-method" id="usd-method-server" data-method="server">
+              <span class="usd-method-check" id="usd-server-check"></span>
+              <span class="usd-method-name">SSH/SFTP</span>
+              <span class="usd-method-status" id="usd-server-status">Not set up</span>
+              <button class="usd-method-gear" id="usd-server-gear" title="Server sync settings">⚙</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+    <div id="sidebar-resize"></div>
+
+    <!-- Context menu (right-click on sidebar items or tabs) -->
+    <div id="context-menu" class="glass hidden"></div>
+
+    <!-- Main content area -->
+    <main id="main">
+      <!-- Note viewer (panels host) -->
+      <div id="viewer">
+      </div>
+
+      <!-- AI chat panel -->
+      <div id="ai-panel" class="hidden">
+        <div id="ai-header">
+          <div class="ai-header-right">
+            <button id="ai-history" title="Conversation history">
+              <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="7" r="5.5"/><path d="M7 4.5V7L8.75 8.75"/></svg>
+            </button>
+            <button id="ai-new" title="New conversation">
+              <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3v8M3 7h8"/></svg>
+            </button>
+            <span id="ai-chat-title" title="Current conversation">New conversation</span>
+            <select id="ai-provider-select" title="AI provider"></select>
+            <select id="ai-model-select" title="AI model"></select>
+            <select id="ai-effort-select" title="AI effort level"></select>
+            <select id="ai-permission-select" title="AI permission mode"></select>
+            <button id="ai-endpoints-settings" title="Endpoint settings">⚙</button>
+          </div>
+          <div class="ai-header-toggle-group">
+            <button type="button" id="ai-expand-toggle" title="Expand/collapse chat">
+              <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9L7 5L11 9"/></svg>
+            </button>
+            <button type="button" id="ai-collapse-btn" class="hidden" title="Close chat">
+              <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3L11 11M11 3L3 11"/></svg>
+            </button>
+          </div>
+          <div id="ai-history-panel" class="glass hidden">
+            <div id="ai-history-search-row">
+              <input id="ai-history-search" type="text" placeholder="Search conversations…" autocomplete="off" spellcheck="false" />
+            </div>
+            <div id="ai-history-list"></div>
+          </div>
+        </div>
+        <div id="ai-messages">
+          <div id="ai-empty-state"></div>
+          <div id="ai-scroll-sentinel"></div>
+        </div>
+        <button id="ai-scroll-bottom" class="hidden" type="button" aria-label="Scroll to bottom">↓</button>
+        <form id="ai-form">
+          <div id="ai-drop-overlay" class="hidden">Drop files here</div>
+          <div id="ai-attachments" class="hidden"></div>
+          <div id="ai-context-bar" class="hidden"></div>
+          <div id="at-dropdown" class="glass hidden"></div>
+          <div id="ai-input-row">
+            <button type="button" id="ai-attach" title="Attach file">
+              <svg fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 3a2.5 2.5 0 0 1 5 0v9a1.5 1.5 0 0 1-3 0V5a.5.5 0 0 1 1 0v7a.5.5 0 0 0 1 0V3a1.5 1.5 0 1 0-3 0v9a2.5 2.5 0 0 0 5 0V5a.5.5 0 0 1 1 0v7a3.5 3.5 0 1 1-7 0z"/></svg>
+            </button>
+            <button type="button" id="ai-active-note-toggle" title="Include current note" aria-pressed="false">
+              <svg fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"/><path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"/></svg>
+            </button>
+            <button type="button" id="ai-use-template" title="Use template" class="hidden">
+              <svg fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/><path d="M4 4h8v1H4zm0 3h8v1H4zm0 3h5v1H4z"/></svg>
+            </button>
+            <textarea
+              id="ai-input"
+              rows="1"
+              placeholder="Describe what to create or change… (Shift+Enter for new line)"
+            ></textarea>
+            <button type="submit" id="ai-send">Send</button>
+            <button type="button" id="ai-cancel" class="hidden">Stop</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Bottom toggle bar -->
+      <div id="bottom-bar">
+        <button id="bottom-chat-btn" title="Toggle chat">
+          <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2.5h10a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H8l-3 2.5V10.5H2a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1z"/></svg>
+          Chat
+        </button>
+        <button id="bottom-terminal-btn" title="Toggle terminal">
+          <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="2.5" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.1"/><path d="M3.5 5.5L6 7.5L3.5 9.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.5 9.5H10.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          Terminal
+        </button>
+        <span id="bottom-bar-disclaimer">AI responses may be inaccurate. Verify important information.</span>
+      </div>
+    </main>
+
+    <!-- Right panel bar + panel -->
+    <div id="right-panel-bar">
+      <div class="right-bar-spacer"></div>
+      <button class="right-bar-icon" id="right-bar-collapse" title="Close panel">
+        <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M5 2.5V11.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+          <path d="M8 5L10.5 7L8 9" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <button class="right-bar-icon" id="right-bar-outline" title="Outline (Cmd+Shift+O)">☰</button>
+      <button class="right-bar-icon" id="right-bar-storage" title="Storage">
+        <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="7" cy="3" rx="5" ry="2" stroke="currentColor" stroke-width="1.2"/>
+          <path d="M2 3v4c0 1.1 2.24 2 5 2s5-.9 5-2V3" stroke="currentColor" stroke-width="1.2"/>
+          <path d="M2 7v4c0 1.1 2.24 2 5 2s5-.9 5-2V7" stroke="currentColor" stroke-width="1.2"/>
+        </svg>
+      </button>
+      <button class="right-bar-icon" id="right-bar-memory" title="Memory">
+        <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M7 1C4.5 1 2.5 3 2.5 5.5c0 1.5.7 2.8 1.8 3.7.3.2.5.6.5 1v.8c0 .6.5 1 1 1h4.4c.5 0 1-.4 1-1v-.8c0-.4.2-.8.5-1C12.8 8.3 13.5 7 13.5 5.5 13.5 3 11.5 1 9 1H7z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/>
+          <path d="M5.5 13h3" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+          <path d="M5.5 8.5c.8-.5 1-1.5 1-2.5M8.5 8.5c-.8-.5-1-1.5-1-2.5" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <button class="right-bar-icon" id="right-bar-scripts" title="Scripts">
+        <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="1" y="2" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.1"/>
+          <path d="M3.5 5.5L5.5 7.5L3.5 9.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M7 9.5H10" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <button class="right-bar-icon" id="right-bar-logs" title="Logs">
+        <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="1" width="10" height="12" rx="1.5" stroke="currentColor" stroke-width="1.1"/>
+          <path d="M4.5 4.5H9.5" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+          <path d="M4.5 7H8.5" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+          <path d="M4.5 9.5H9" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+    <div id="outline-panel-resize"></div>
+    <aside id="outline-panel">
+      <div class="outline-header">
+        <span class="outline-title">Outline</span>
+        <button id="memory-edit-btn" class="memory-action-btn memory-header-edit hidden">Edit</button>
+        <select id="outline-level-filter">
+          <option value="6">All</option>
+          <option value="1">H1</option>
+          <option value="2">H1–H2</option>
+          <option value="3">H1–H3</option>
+        </select>
+      </div>
+      <div id="outline-panel-body">
+        <div id="outline-tab-content">
+          <div id="outline-content">
+            <div id="outline-empty" class="outline-empty">No note selected</div>
+            <ul id="outline-tree" class="hidden"></ul>
+          </div>
+          <div id="backlinks-section">
+            <div class="backlinks-header">
+              <span class="backlinks-title">Backlinks</span>
+              <span id="backlinks-count" class="backlinks-count"></span>
+            </div>
+            <div id="backlinks-content">
+              <div id="backlinks-empty" class="backlinks-empty">No note selected</div>
+              <ul id="backlinks-list" class="hidden"></ul>
+            </div>
+          </div>
+        </div>
+        <div id="storage-tab-content" class="hidden">
+        <div id="storage-section">
+            <div id="storage-empty" class="storage-empty hidden">No note selected</div>
+
+            <!-- KV Store section -->
+            <div class="storage-sub" id="storage-kv">
+              <div id="storage-kv-header" class="storage-sub-header" role="button" tabindex="0" aria-expanded="true">
+                <span class="storage-sub-title">KV Store</span>
+                <span id="storage-kv-info" class="storage-sub-info"></span>
+                <span class="section-chevron expanded" id="storage-kv-toggle" aria-hidden="true">
+                  <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708"/></svg>
+                </span>
+              </div>
+              <div id="storage-kv-body" class="storage-sub-body">
+                <div id="storage-kv-empty" class="storage-sub-empty hidden">No key-value data</div>
+                <table id="storage-kv-table" class="storage-kv-table hidden">
+                  <colgroup><col><col><col></colgroup>
+                  <thead><tr><th>Key</th><th>Value</th><th>Type</th></tr></thead>
+                  <tbody id="storage-kv-rows"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Files section -->
+            <div class="storage-sub" id="storage-files">
+              <div id="storage-files-header" class="storage-sub-header" role="button" tabindex="0" aria-expanded="true">
+                <span class="storage-sub-title">Files</span>
+                <span id="storage-files-info" class="storage-sub-info"></span>
+                <span class="section-chevron expanded" id="storage-files-toggle" aria-hidden="true">
+                  <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708"/></svg>
+                </span>
+              </div>
+              <div id="storage-files-body" class="storage-sub-body">
+                <div id="storage-files-empty" class="storage-sub-empty hidden">No stored files</div>
+                <table id="storage-files-table" class="storage-files-table hidden">
+                  <colgroup><col><col><col></colgroup>
+                  <thead><tr><th>Name</th><th>Size</th><th>Modified</th></tr></thead>
+                  <tbody id="storage-files-rows"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- SQL Database section -->
+            <div class="storage-sub" id="storage-sql">
+              <div id="storage-sql-header" class="storage-sub-header" role="button" tabindex="0" aria-expanded="true">
+                <span class="storage-sub-title">SQL Database</span>
+                <span id="storage-sql-info" class="storage-sub-info"></span>
+                <span class="section-chevron expanded" id="storage-sql-toggle" aria-hidden="true">
+                  <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708"/></svg>
+                </span>
+              </div>
+              <div id="storage-sql-body" class="storage-sub-body">
+                <div id="storage-sql-empty" class="storage-sub-empty hidden">No SQL database</div>
+
+                <!-- Expandable table list -->
+                <div id="storage-sql-tables" class="hidden"></div>
+
+                <!-- Browse results area (one table at a time) -->
+                <div id="storage-sql-browse" class="hidden">
+                  <div class="sql-browse-header">
+                    <span class="sql-browse-title"></span>
+                    <div class="sql-browse-actions">
+                      <button class="sql-export-btn">Download CSV</button>
+                      <button class="sql-browse-close">×</button>
+                    </div>
+                  </div>
+                  <div class="sql-browse-results"></div>
+                  <div class="sql-browse-pagination">
+                    <button class="sql-page-prev" disabled>← Prev</button>
+                    <span class="sql-page-info"></span>
+                    <button class="sql-page-next">Next →</button>
+                  </div>
+                </div>
+
+                <!-- Query runner (always visible when tables exist) -->
+                <div id="storage-sql-query" class="hidden">
+                  <div class="sql-query-input-row">
+                    <textarea id="sql-query-input" placeholder="SELECT * FROM …" rows="3" spellcheck="false"></textarea>
+                    <button id="sql-query-run">Run</button>
+                  </div>
+                  <div id="sql-query-error" class="hidden"></div>
+                  <div id="sql-query-results-wrap" class="hidden">
+                    <div class="sql-query-results-toolbar">
+                      <span id="sql-query-result-info"></span>
+                      <button id="sql-query-export">Download CSV</button>
+                    </div>
+                    <div id="sql-query-results"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+        </div>
+        </div>
+        <div id="memory-tab-content" class="hidden">
+          <div id="memory-section">
+            <div id="memory-empty" class="memory-empty">No note selected</div>
+            <div id="memory-content" class="hidden">
+              <div id="memory-text" class="msg-assistant msg-markdown"></div>
+            </div>
+            <div id="memory-edit-wrap" class="hidden">
+              <textarea id="memory-edit-textarea" spellcheck="false" placeholder="Write memory for this note…"></textarea>
+              <div class="memory-edit-actions">
+                <button id="memory-save-btn" class="memory-action-btn">Save</button>
+                <button id="memory-cancel-btn" class="memory-action-btn secondary">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="scripts-tab-content" class="hidden">
+          <!-- Environment section -->
+          <div id="scripts-env-section" class="scripts-section">
+            <div class="scripts-section-header" id="scripts-env-header"
+                 role="button" tabindex="0" aria-expanded="true" aria-controls="scripts-env-body">
+              <span class="scripts-section-title">Environment</span>
+              <span class="section-chevron expanded" id="scripts-env-toggle" aria-hidden="true">
+                <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708"/></svg>
+              </span>
+            </div>
+            <div class="scripts-section-body" id="scripts-env-body">
+              <div id="scripts-env-content"></div>
+            </div>
+          </div>
+          <!-- Running scripts section -->
+          <div id="scripts-running-section" class="scripts-section hidden">
+            <div class="scripts-section-header" id="scripts-running-header"
+                 role="button" tabindex="0" aria-expanded="true" aria-controls="scripts-running-body">
+              <span class="scripts-section-title">Running</span>
+              <span id="scripts-running-count-badge" class="scripts-section-count"></span>
+              <span class="section-chevron expanded" id="scripts-running-toggle" aria-hidden="true">
+                <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708"/></svg>
+              </span>
+            </div>
+            <div class="scripts-section-body" id="scripts-running-body">
+              <div id="scripts-running-list"></div>
+            </div>
+          </div>
+          <!-- Script collection section -->
+          <div id="scripts-collection-section" class="scripts-section">
+            <div class="scripts-section-header" id="scripts-collection-header"
+                 role="button" tabindex="0" aria-expanded="true" aria-controls="scripts-collection-body">
+              <span class="scripts-section-title">Scripts</span>
+              <span id="scripts-collection-count-badge" class="scripts-section-count"></span>
+              <span class="section-chevron expanded" id="scripts-collection-toggle" aria-hidden="true">
+                <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708"/></svg>
+              </span>
+            </div>
+            <div class="scripts-section-body" id="scripts-collection-body">
+              <div id="scripts-empty" class="scripts-empty">No note selected</div>
+              <div id="scripts-list" class="hidden"></div>
+            </div>
+          </div>
+        </div>
+        <div id="logs-tab-content" class="hidden">
+          <div id="logs-header">
+            <button id="logs-toggle-btn" class="logs-toggle" title="Toggle logging">Logging: On</button>
+          </div>
+          <div id="logs-section">
+            <div id="logs-empty" class="logs-empty">No note selected</div>
+            <div id="logs-file-list" class="hidden">
+              <div id="logs-file-selector"></div>
+              <div id="logs-content-wrap">
+                <pre id="logs-content"></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+    </div><!-- end #app-body -->
+  </div>
+
+  <script src="../node_modules/marked/lib/marked.umd.js"></script>
+  <script src="vendor/highlight.min.js"></script>
+  <script src="../node_modules/dompurify/dist/purify.min.js"></script>
+  <script src="markdown.js"></script>
+  <script src="tab-state.js"></script>
+  <script src="outline.js"></script>
+  <script src="../node_modules/d3/dist/d3.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

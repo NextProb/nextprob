@@ -1,0 +1,12 @@
+{
+  "dev": {
+    "githubClientId": "REPLACE_WITH_GITHUB_CLIENT_ID",
+    "contentRepo": "REPLACE_WITH_DEV_CONTENT_REPO",
+    "contentBranch": "main"
+  },
+  "prod": {
+    "githubClientId": "REPLACE_WITH_GITHUB_CLIENT_ID",
+    "contentRepo": "REPLACE_WITH_PROD_CONTENT_REPO",
+    "contentBranch": "main"
+  }
+}

@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Terminal</title>
+  <link rel="stylesheet" href="../node_modules/@xterm/xterm/css/xterm.css" />
+  <style>
+    :root {
+      /* Terminal ANSI — teal-harmonized for Veridian Slate */
+      --term-bg: #0b0f0f;
+      --term-fg: #c4c9c8;
+      --term-cursor: #4fdad5;
+      --term-selection: rgba(79, 218, 213, 0.2);
+      --term-black: #313635;
+      --term-red: #e06c75;
+      --term-green: #56d4a0;
+      --term-yellow: #e5c07b;
+      --term-blue: #5eaec5;
+      --term-magenta: #c678dd;
+      --term-cyan: #4fdad5;
+      --term-white: #abb2b1;
+      --term-bright-black: #3e4948;
+      --term-bright-red: #f07178;
+      --term-bright-green: #6ee7b7;
+      --term-bright-yellow: #f0d98c;
+      --term-bright-blue: #79c0d8;
+      --term-bright-magenta: #d6a0e8;
+      --term-bright-cyan: #71f7f1;
+      --term-bright-white: #c4c9c8;
+
+      /* Chrome — Veridian Slate surfaces */
+      --panel-bg: #0b0f0f;
+      --tab-bar-bg: #181c1c;
+      --tab-bg: transparent;
+      --tab-active-bg: #0b0f0f;
+      --tab-active-hover-bg: #0b0f0f;
+      --tab-active-fg: #c4c9c8;
+      --tab-hover-bg: #272b2a;
+      --tab-fg: #c4c9c8;
+      --tab-fg-dim: #818686;
+      --drag-bar-bg: #181c1c;
+      --ghost-border: rgba(62, 73, 72, 0.15);
+      --ambient-shadow: 0 0 32px rgba(196, 201, 200, 0.06);
+      --btn-fg: #818686;
+      --btn-fg-hover: #c4c9c8;
+    }
+
+    html[data-theme="light"] {
+      /* Terminal ANSI — teal-harmonized for Veridian Lumina */
+      --term-bg: #effcfb;
+      --term-fg: #121e1d;
+      --term-cursor: #004c4b;
+      --term-selection: rgba(0, 76, 75, 0.15);
+      --term-black: #bec9c7;
+      --term-red: #c82828;
+      --term-green: #18784a;
+      --term-yellow: #a07000;
+      --term-blue: #1865a0;
+      --term-magenta: #8830a0;
+      --term-cyan: #006663;
+      --term-white: #4a5654;
+      --term-bright-black: #9ca5a3;
+      --term-bright-red: #d83838;
+      --term-bright-green: #208858;
+      --term-bright-yellow: #b88200;
+      --term-bright-blue: #2075b0;
+      --term-bright-magenta: #a038b0;
+      --term-bright-cyan: #004c4b;
+      --term-bright-white: #121e1d;
+
+      /* Chrome — Veridian Lumina surfaces */
+      --panel-bg: #effcfb;
+      --tab-bar-bg: #e9f6f5;
+      --tab-bg: transparent;
+      --tab-active-bg: #effcfb;
+      --tab-active-hover-bg: #effcfb;
+      --tab-active-fg: #121e1d;
+      --tab-hover-bg: #dceeed;
+      --tab-fg: #121e1d;
+      --tab-fg-dim: #5a6664;
+      --drag-bar-bg: #e9f6f5;
+      --ghost-border: rgba(190, 201, 199, 0.2);
+      --ambient-shadow: 0 0 32px rgba(18, 30, 29, 0.06);
+      --btn-fg: #5a6664;
+      --btn-fg-hover: #121e1d;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; overflow: hidden; background: var(--term-bg); }
+    body {
+      display: flex;
+      flex-direction: column;
+      border-radius: 0.75rem;
+      border: 1px solid var(--ghost-border);
+
+      overflow: hidden;
+    }
+
+    /* Drag bar (narrow drag strip) */
+    #drag-bar {
+      height: 0.375rem;
+      background: var(--drag-bar-bg);
+      -webkit-app-region: drag;
+      flex-shrink: 0;
+    }
+
+    /* Tab bar */
+    #tab-bar {
+      display: flex;
+      align-items: stretch;
+      height: 30px;
+      background: var(--tab-bar-bg);
+      flex-shrink: 0;
+      overflow-x: auto;
+      overflow-y: hidden;
+      user-select: none;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 0.75rem;
+      -webkit-app-region: drag;
+    }
+    #tab-bar::-webkit-scrollbar { height: 0; }
+    .tab {
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+      padding: 0 0.75rem;
+      background: var(--tab-bg);
+      color: var(--tab-fg-dim);
+      cursor: pointer;
+      white-space: nowrap;
+      min-width: 0;
+      flex-shrink: 0;
+      max-width: 160px;
+      -webkit-app-region: no-drag;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+    .tab:hover {
+      background: var(--tab-hover-bg);
+      color: var(--tab-fg);
+    }
+    .tab.active {
+      background: var(--tab-active-bg);
+      color: var(--tab-active-fg);
+    }
+    .tab.active:hover {
+      background: var(--tab-active-hover-bg);
+      color: var(--tab-active-hover-fg, var(--tab-active-fg));
+    }
+    .tab-label { overflow: hidden; text-overflow: ellipsis; }
+    .tab-close {
+      background: none;
+      border: none;
+      color: inherit;
+      opacity: 0;
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1;
+      padding: 0.0625rem 0.1875rem;
+      border-radius: 3px;
+      flex-shrink: 0;
+      transition: opacity 0.2s ease;
+    }
+    .tab:hover .tab-close { opacity: 0.5; }
+    .tab-close:hover { opacity: 1 !important; background: rgba(79, 218, 213, 0.12); }
+
+    /* Claude activity indicator dot */
+    .tab-indicator {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: none;
+    }
+    .tab-indicator[data-state="running"] {
+      display: block;
+      background: var(--term-cyan);
+      animation: indicator-pulse 2s ease-in-out infinite;
+    }
+    .tab-indicator[data-state="waiting"] {
+      display: block;
+      background: var(--term-blue);
+      opacity: 0.7;
+    }
+    .tab-indicator[data-state="permission"],
+    .tab-indicator[data-state="input"] {
+      display: block;
+      background: var(--term-yellow);
+      animation: indicator-attention 1s ease-in-out infinite;
+    }
+    .tab-indicator[data-state="done"] {
+      display: block;
+      background: var(--term-green);
+    }
+    @keyframes indicator-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+    @keyframes indicator-attention {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(1.4); }
+    }
+
+    .tab.dragging { opacity: 0.4; }
+    .tab.drag-over-left { box-shadow: inset 2px 0 0 var(--term-cyan); }
+    .tab.drag-over-right { box-shadow: inset -2px 0 0 var(--term-cyan); }
+    #tab-add {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      background: none;
+      border: none;
+      color: var(--btn-fg);
+      cursor: pointer;
+      font-size: 16px;
+      flex-shrink: 0;
+      -webkit-app-region: no-drag;
+      transition: color 0.2s ease, background 0.2s ease;
+    }
+    #tab-add:hover { color: var(--btn-fg-hover); background: var(--tab-hover-bg); }
+    .tab-bar-actions {
+      display: flex;
+      align-items: stretch;
+      margin-left: auto;
+      flex-shrink: 0;
+      -webkit-app-region: no-drag;
+    }
+    .tab-bar-actions button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      background: none;
+      border: none;
+      color: var(--btn-fg);
+      cursor: pointer;
+      flex-shrink: 0;
+      border-radius: 4px;
+      -webkit-app-region: no-drag;
+      transition: color 0.2s ease, background 0.2s ease;
+    }
+    .tab-bar-actions button:hover {
+      color: var(--btn-fg-hover);
+      background: var(--tab-hover-bg);
+    }
+    .tab-bar-actions button svg {
+      width: 12px;
+      height: 12px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.75;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    #tab-bar-close {
+      font-size: 16px;
+      line-height: 1;
+    }
+
+    #terminal-container {
+      flex: 1;
+      padding: 0.25rem 0 0 0.5rem;
+      overflow: hidden;
+      position: relative;
+    }
+    body.minimized #terminal-container {
+      display: none;
+    }
+    .terminal-instance {
+      position: absolute;
+      top: 0.25rem;
+      left: 0.5rem;
+      right: 0;
+      bottom: 0;
+      display: none;
+    }
+    .terminal-instance.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div id="drag-bar"></div>
+  <div id="tab-bar">
+    <button id="tab-add" title="New tab">+</button>
+    <div class="tab-bar-actions">
+      <button id="tab-bar-minimize" title="Minimize">
+        <svg viewBox="0 0 12 12"><line x1="2" y1="6" x2="10" y2="6"/></svg>
+      </button>
+      <button id="tab-bar-maximize" title="Maximize">
+        <svg viewBox="0 0 12 12"><rect x="2" y="2" width="8" height="8" rx="1"/></svg>
+      </button>
+      <button id="tab-bar-close" title="Close terminal">&times;</button>
+    </div>
+  </div>
+  <div id="terminal-container"></div>
+  <script>delete window.module; delete window.exports;</script>
+  <script src="../node_modules/@xterm/xterm/lib/xterm.js"></script>
+  <script src="../node_modules/@xterm/addon-fit/lib/addon-fit.js"></script>
+  <script src="../node_modules/@xterm/addon-web-links/lib/addon-web-links.js"></script>
+  <script>
+    const { Terminal } = window;
+    const { FitAddon } = window.FitAddon;
+    const { WebLinksAddon } = window.WebLinksAddon;
+
+    // Tab state: tabId -> { term, fitAddon, el }
+    const tabInstances = new Map();
+    let activeTabId = null;
+    let tabCounter = 0;
+
+    function getXtermTheme() {
+      const s = getComputedStyle(document.documentElement);
+      const v = (prop) => s.getPropertyValue(prop).trim();
+      return {
+        background:       v('--term-bg'),
+        foreground:       v('--term-fg'),
+        cursor:           v('--term-cursor'),
+        cursorAccent:     v('--term-bg'),
+        selectionBackground: v('--term-selection'),
+        black:            v('--term-black'),
+        red:              v('--term-red'),
+        green:            v('--term-green'),
+        yellow:           v('--term-yellow'),
+        blue:             v('--term-blue'),
+        magenta:          v('--term-magenta'),
+        cyan:             v('--term-cyan'),
+        white:            v('--term-white'),
+        brightBlack:      v('--term-bright-black'),
+        brightRed:        v('--term-bright-red'),
+        brightGreen:      v('--term-bright-green'),
+        brightYellow:     v('--term-bright-yellow'),
+        brightBlue:       v('--term-bright-blue'),
+        brightMagenta:    v('--term-bright-magenta'),
+        brightCyan:       v('--term-bright-cyan'),
+        brightWhite:      v('--term-bright-white'),
+      };
+    }
+
+    function createTerminalInstance(tabId) {
+      tabCounter++;
+      const fitAddon = new FitAddon();
+      const webLinksAddon = new WebLinksAddon();
+
+      const term = new Terminal({
+        fontFamily: 'Menlo, Monaco, "Courier New", monospace',
+        fontSize: 13,
+        theme: getXtermTheme(),
+        cursorBlink: true,
+        allowProposedApi: true,
+      });
+
+      term.loadAddon(fitAddon);
+      term.loadAddon(webLinksAddon);
+
+      // Create DOM element
+      const el = document.createElement('div');
+      el.className = 'terminal-instance';
+      el.dataset.tabId = tabId;
+      document.getElementById('terminal-container').appendChild(el);
+
+      term.open(el);
+
+      // macOS-native cursor navigation (Cmd+Arrow for Home/End, Option+Arrow for word movement)
+      term.attachCustomKeyEventHandler((e) => {
+        if (e.type !== 'keydown') return true;
+        if (e.metaKey && e.key === 'ArrowLeft') {
+          window.terminalApi.sendData('\x1bOH');
+          return false;
+        }
+        if (e.metaKey && e.key === 'ArrowRight') {
+          window.terminalApi.sendData('\x1bOF');
+          return false;
+        }
+        if (e.altKey && e.key === 'ArrowLeft') {
+          window.terminalApi.sendData('\x1bb');
+          return false;
+        }
+        if (e.altKey && e.key === 'ArrowRight') {
+          window.terminalApi.sendData('\x1bf');
+          return false;
+        }
+        if (e.metaKey && e.key === 'Backspace') {
+          window.terminalApi.sendData('\x15');
+          return false;
+        }
+        if (e.altKey && e.key === 'Backspace') {
+          window.terminalApi.sendData('\x17');
+          return false;
+        }
+        return true;
+      });
+
+      // Data flow: user keystrokes -> PTY (routed by main process to active tab's PTY)
+      term.onData((data) => window.terminalApi.sendData(data));
+
+      tabInstances.set(tabId, { term, fitAddon, el, index: tabCounter });
+      return tabInstances.get(tabId);
+    }
+
+    // Drag-to-reorder state
+    let draggedTabId = null;
+
+    function rebuildTabInstancesOrder() {
+      const tabBar = document.getElementById('tab-bar');
+      const tabEls = tabBar.querySelectorAll('.tab[data-tab-id]');
+      const oldMap = new Map(tabInstances);
+      tabInstances.clear();
+      for (const el of tabEls) {
+        const id = Number(el.dataset.tabId);
+        if (oldMap.has(id)) tabInstances.set(id, oldMap.get(id));
+      }
+    }
+
+    function clearDropIndicators() {
+      for (const el of document.querySelectorAll('.tab.drag-over-left, .tab.drag-over-right')) {
+        el.classList.remove('drag-over-left', 'drag-over-right');
+      }
+    }
+
+    function addTabElement(tabId) {
+      const instance = tabInstances.get(tabId);
+      const tabBar = document.getElementById('tab-bar');
+      const addBtn = document.getElementById('tab-add');
+
+      const tab = document.createElement('div');
+      tab.className = 'tab';
+      tab.dataset.tabId = tabId;
+      tab.draggable = true;
+
+      const label = document.createElement('span');
+      label.className = 'tab-label';
+      label.textContent = 'zsh #' + instance.index;
+
+      const close = document.createElement('button');
+      close.className = 'tab-close';
+      close.textContent = '\u00d7';
+      close.title = 'Close tab';
+      close.addEventListener('click', (e) => {
+        e.stopPropagation();
+        window.terminalApi.closeTab(tabId);
+      });
+
+      const indicator = document.createElement('span');
+      indicator.className = 'tab-indicator';
+      indicator.dataset.state = 'idle';
+
+      tab.appendChild(indicator);
+      tab.appendChild(label);
+      tab.appendChild(close);
+      tab.addEventListener('click', () => activateTab(tabId));
+
+      // Drag-to-reorder events
+      tab.addEventListener('dragstart', (e) => {
+        draggedTabId = tabId;
+        tab.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', String(tabId));
+      });
+      tab.addEventListener('dragend', () => {
+        tab.classList.remove('dragging');
+        draggedTabId = null;
+        clearDropIndicators();
+      });
+      tab.addEventListener('dragover', (e) => {
+        if (draggedTabId === null || draggedTabId === tabId) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        clearDropIndicators();
+        const rect = tab.getBoundingClientRect();
+        const midX = rect.left + rect.width / 2;
+        tab.classList.add(e.clientX < midX ? 'drag-over-left' : 'drag-over-right');
+      });
+      tab.addEventListener('dragleave', () => {
+        tab.classList.remove('drag-over-left', 'drag-over-right');
+      });
+      tab.addEventListener('drop', (e) => {
+        e.preventDefault();
+        if (draggedTabId === null || draggedTabId === tabId) return;
+        const draggedEl = document.querySelector(`.tab[data-tab-id="${draggedTabId}"]`);
+        if (!draggedEl) return;
+        const rect = tab.getBoundingClientRect();
+        const midX = rect.left + rect.width / 2;
+        if (e.clientX < midX) {
+          tabBar.insertBefore(draggedEl, tab);
+        } else {
+          tabBar.insertBefore(draggedEl, tab.nextSibling);
+        }
+        clearDropIndicators();
+        rebuildTabInstancesOrder();
+      });
+
+      tabBar.insertBefore(tab, addBtn);
+    }
+
+    function activateTab(tabId) {
+      if (!tabInstances.has(tabId) || tabId === activeTabId) return;
+
+      // Deactivate current
+      if (activeTabId !== null) {
+        const prev = tabInstances.get(activeTabId);
+        if (prev) prev.el.classList.remove('active');
+        const prevTab = document.querySelector(`.tab[data-tab-id="${activeTabId}"]`);
+        if (prevTab) prevTab.classList.remove('active');
+      }
+
+      activeTabId = tabId;
+      const inst = tabInstances.get(tabId);
+      inst.el.classList.add('active');
+
+      const tabEl = document.querySelector(`.tab[data-tab-id="${tabId}"]`);
+      if (tabEl) tabEl.classList.add('active');
+
+      // Notify main process
+      window.terminalApi.switchTab(tabId);
+
+      // Fit after making visible
+      requestAnimationFrame(() => {
+        inst.fitAddon.fit();
+        window.terminalApi.resize(inst.term.cols, inst.term.rows);
+        inst.term.focus();
+      });
+    }
+
+    function removeTab(tabId) {
+      const inst = tabInstances.get(tabId);
+      if (!inst) return;
+
+      inst.term.dispose();
+      inst.el.remove();
+      tabInstances.delete(tabId);
+
+      const tabEl = document.querySelector(`.tab[data-tab-id="${tabId}"]`);
+      if (tabEl) tabEl.remove();
+    }
+
+    // IPC: data from PTY (tagged with tabId)
+    window.terminalApi.onData((tabId, data) => {
+      const inst = tabInstances.get(tabId);
+      if (inst) inst.term.write(data);
+    });
+
+    // IPC: new tab created by main process
+    window.terminalApi.onTabCreated((tabId) => {
+      if (tabInstances.has(tabId)) return;
+      createTerminalInstance(tabId);
+      addTabElement(tabId);
+      activateTab(tabId);
+    });
+
+    // IPC: tab closed (PTY exited)
+    window.terminalApi.onTabClosed((tabId) => {
+      removeTab(tabId);
+    });
+
+    // IPC: Claude activity indicator update
+    window.terminalApi.onTabIndicator((tabId, state) => {
+      const tabEl = document.querySelector(`.tab[data-tab-id="${tabId}"]`);
+      if (!tabEl) return;
+      const dot = tabEl.querySelector('.tab-indicator');
+      if (dot) dot.dataset.state = state;
+    });
+
+    // IPC: main process activated a tab (e.g. after active tab's PTY exited)
+    window.terminalApi.onTabActivated((tabId) => {
+      activateTab(tabId);
+    });
+
+    // Auto-resize on container change
+    const ro = new ResizeObserver(() => {
+      if (activeTabId !== null) {
+        const inst = tabInstances.get(activeTabId);
+        if (inst) {
+          inst.fitAddon.fit();
+          window.terminalApi.resize(inst.term.cols, inst.term.rows);
+        }
+      }
+    });
+    ro.observe(document.getElementById('terminal-container'));
+
+    // Theme sync
+    window.terminalApi.onThemeChanged((theme) => {
+      if (theme === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+      }
+      const newTheme = getXtermTheme();
+      for (const [, inst] of tabInstances) {
+        inst.term.options.theme = newTheme;
+      }
+    });
+
+    // Close button
+    document.getElementById('tab-bar-close').addEventListener('click', () => {
+      window.terminalApi.closeTerminal();
+    });
+
+    // Minimize / maximize buttons
+    document.getElementById('tab-bar-minimize').addEventListener('click', () => {
+      window.terminalApi.minimize();
+    });
+    document.getElementById('tab-bar-maximize').addEventListener('click', () => {
+      window.terminalApi.maximize();
+    });
+
+    // Update button icons and body class when state changes
+    window.terminalApi.onStateChanged((state) => {
+      document.body.classList.toggle('minimized', state === 'minimized');
+      const minBtn = document.getElementById('tab-bar-minimize');
+      const maxBtn = document.getElementById('tab-bar-maximize');
+      // Minimize button: show chevron-up when minimized, line when normal/maximized
+      if (state === 'minimized') {
+        minBtn.innerHTML = '<svg viewBox="0 0 12 12"><polyline points="3,8 6,4 9,8"/></svg>';
+        minBtn.title = 'Restore';
+      } else {
+        minBtn.innerHTML = '<svg viewBox="0 0 12 12"><line x1="2" y1="6" x2="10" y2="6"/></svg>';
+        minBtn.title = 'Minimize';
+      }
+      // Maximize button: show restore icon when maximized, rect when normal/minimized
+      if (state === 'maximized') {
+        maxBtn.innerHTML = '<svg viewBox="0 0 12 12"><rect x="1" y="3.5" width="7" height="7" rx="1"/><path d="M4 3.5V2.5a1 1 0 0 1 1-1h5.5a1 1 0 0 1 1 1V8a1 1 0 0 1-1 1H9.5"/></svg>';
+        maxBtn.title = 'Restore';
+      } else {
+        maxBtn.innerHTML = '<svg viewBox="0 0 12 12"><rect x="2" y="2" width="8" height="8" rx="1"/></svg>';
+        maxBtn.title = 'Maximize';
+      }
+    });
+
+    // New tab button
+    document.getElementById('tab-add').addEventListener('click', () => {
+      window.terminalApi.createTab();
+    });
+
+    // Keyboard shortcuts for tabs
+    document.addEventListener('keydown', (e) => {
+      const isMeta = process.platform === 'darwin' ? e.metaKey : e.ctrlKey;
+      if (isMeta && e.key === 't') {
+        e.preventDefault();
+        window.terminalApi.createTab();
+      } else if (isMeta && e.key === 'w') {
+        e.preventDefault();
+        if (activeTabId !== null) window.terminalApi.closeTab(activeTabId);
+      } else if (isMeta && e.shiftKey && (e.key === '{' || e.key === '[')) {
+        e.preventDefault();
+        navigateTab(-1);
+      } else if (isMeta && e.shiftKey && (e.key === '}' || e.key === ']')) {
+        e.preventDefault();
+        navigateTab(1);
+      }
+    });
+
+    function navigateTab(direction) {
+      const ids = Array.from(tabInstances.keys());
+      if (ids.length < 2) return;
+      const idx = ids.indexOf(activeTabId);
+      const next = (idx + direction + ids.length) % ids.length;
+      activateTab(ids[next]);
+    }
+
+    // All listeners registered — tell main process to create the first tab.
+    window.terminalApi.ready();
+  </script>
+</body>
+</html>
