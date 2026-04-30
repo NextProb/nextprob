@@ -3,26 +3,19 @@
 const fs = require('fs');
 const path = require('path');
 
-const noteDbCache = new Map();
-
 function noteDbPath(notePath, noteId) {
   if (!notePath) return null;
   return path.join(notePath, 'storage', 'kv.json');
 }
 
 function noteDbLoad(notePath, noteId) {
-  if (noteDbCache.has(noteId)) return noteDbCache.get(noteId);
   const kvPath = noteDbPath(notePath, noteId);
-  let data = {};
-  if (kvPath && fs.existsSync(kvPath)) {
-    try {
-      data = JSON.parse(fs.readFileSync(kvPath, 'utf8'));
-    } catch {
-      data = {};
-    }
+  if (!kvPath || !fs.existsSync(kvPath)) return {};
+  try {
+    return JSON.parse(fs.readFileSync(kvPath, 'utf8'));
+  } catch {
+    return {};
   }
-  noteDbCache.set(noteId, data);
-  return data;
 }
 
 function noteDbFlush(notePath, noteId, data) {
@@ -39,8 +32,4 @@ function noteDbFlush(notePath, noteId, data) {
   }
 }
 
-function clearCache() {
-  noteDbCache.clear();
-}
-
-module.exports = { noteDbCache, noteDbPath, noteDbLoad, noteDbFlush, clearCache };
+module.exports = { noteDbPath, noteDbLoad, noteDbFlush };

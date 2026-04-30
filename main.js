@@ -318,7 +318,6 @@ async function openWorkspace(wsPath) {
   contextSnapshot.writeMeta(wsPath);
   _loadLoggingEnabled(); // load per-workspace logging toggle
   _securitySettings = readSecuritySettings(); // load per-workspace security settings
-  noteDb.clearCache(); // flush stale KV cache from previous workspace
   favorites.reset(); // clear stale in-memory state from previous workspace (feature 118)
   favorites.init(wsPath); // load per-workspace favorites from disk — must run before any async op (feature 118/123)
   // Startup stale-favorites cleanup (feature 123)

@@ -7,9 +7,6 @@
 const fs = require('fs');
 const path = require('path');
 
-// In-memory cache: Map<noteId, object>
-const noteDbCache = new Map();
-
 /**
  * Resolve and validate the kv.json path for a note.
  * Returns null if workspacePath is not set or noteId is a path-traversal attempt.
@@ -22,21 +19,17 @@ function noteDbPath(workspacePath, noteId) {
 }
 
 /**
- * Load the KV store for a note into cache (if not already loaded). Returns the cache entry.
+ * Read the KV store for a note from disk. Always hits the filesystem so external
+ * edits to kv.json are picked up immediately.
  */
 function noteDbLoad(workspacePath, noteId) {
-  if (noteDbCache.has(noteId)) return noteDbCache.get(noteId);
   const kvPath = noteDbPath(workspacePath, noteId);
-  let data = {};
-  if (kvPath && fs.existsSync(kvPath)) {
-    try {
-      data = JSON.parse(fs.readFileSync(kvPath, 'utf8'));
-    } catch {
-      data = {};
-    }
+  if (!kvPath || !fs.existsSync(kvPath)) return {};
+  try {
+    return JSON.parse(fs.readFileSync(kvPath, 'utf8'));
+  } catch {
+    return {};
   }
-  noteDbCache.set(noteId, data);
-  return data;
 }
 
 /**
@@ -57,11 +50,4 @@ function noteDbFlush(workspacePath, noteId, data) {
   }
 }
 
-/**
- * Clear the in-memory cache (call on workspace switch).
- */
-function clearCache() {
-  noteDbCache.clear();
-}
-
-module.exports = { noteDbCache, noteDbPath, noteDbLoad, noteDbFlush, clearCache };
+module.exports = { noteDbPath, noteDbLoad, noteDbFlush };
