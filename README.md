@@ -1,22 +1,56 @@
-# ToutKit
+<p align="center">
+  <img src="assets/logo.png" alt="ToutKit logo" height="80">
+  <img src="assets/logo-fullname.png" alt="ToutKit" height="80">
+</p>
+
+<h1 align="center">A notebook for vibe-coded websites</h1>
+
+<p align="center">
+  Anything you're curious about becomes your own interactive page.
+</p>
+
+<p align="center">
+  <a href="https://youtu.be/ZjUs5zavs3E"><img src="https://img.shields.io/badge/demo-YouTube-red" alt="Demo on YouTube"></a>
+  <a href="https://discord.gg/XErCw8DxX2"><img src="https://img.shields.io/badge/community-Discord-5865F2?logo=discord&logoColor=white" alt="Join the Discord community"></a>
+</p>
+
+**Two everyday frustrations of vibe-coding, solved:**
+
+- **Lost folders. Forgotten commands.** → Every project **lives in your notebook, runs in one click** — frontend and backend.
+- **Walls of text from AI.** → Answers come back as **interactive pages**.
+
+<p align="center">
+  <img src="screenshots/how-it-works.gif" alt="ToutKit interface — sidebar of notes, embedded webview, and terminal" width="800">
+</p>
+
+ToutKit is a desktop app that pairs a sidebar of notes with a built-in terminal for AI CLIs (Claude, Codex, Gemini) and an in-app browser that renders whatever the AI writes.
+Each note is a self-contained folder with its own SQLite database, key/value store, attached files, and scripts — so a note can grow from a static page into a sortable table, an interactive dashboard, or a research tool, without leaving your filesystem.
+Everything stays on your disk; nothing syncs to a ToutKit-run server unless you opt in.
+
+<p align="center">
+  <a href="https://github.com/toutkit/toutkit/releases/latest"><strong>Download</strong></a> ·
+  <a href="#install">Install from source</a> ·
+  <a href="#see-it-work">See it work</a> ·
+  <a href="https://youtu.be/ZjUs5zavs3E">Watch the demo</a>
+</p>
+
+---
+
+## Why I built this
 
 > "For answers, I often have it generate dynamic htmls (with js) that allows me to sort/filter data and to tinker with visualizations interactively." — [Lex Fridman](https://x.com/lexfridman/status/2039841897066414291), replying to Andrej Karpathy's "LLM Knowledge Bases" post on X, April 2026.
 
 I'm Stephen Z, founder of ToutKit and a vibe-coder. I've built many small projects since 2024: some are tools that help me handle PDFs, text, audio, and video; some are products for users; and some are actually a note-taking process in VS Code with Agent as the writer. Before that, I was a business analyst at an internet company.
 
-**Why do I want to build ToutKit**
-**An idea from someone who likes to take notes**
+**An idea from someone who likes to take notes.**
 I like taking notes — for big or small decisions, or any kind of planning. I also like Obsidian very much. But I have been thinking about a more native way to write in this Agent era. Is it still a cursor and text running from left to right, top to bottom?
-**AI handles writing today, but it still lacks a "Canvas" — and you need a GUI**
+
+**AI handles writing today, but it still lacks a "Canvas" — and you need a GUI.**
 Today, AI already handles the writing instead of the human. However, for the frontend, it's still the same window and the same layout, which I thought might need an upgrade. Considering AI's proficiency at writing not only markdown but also code, why don't we ask AI to take notes directly in the format of a website, or even an application? That's what ToutKit would like to do: give you a GUI and, at the same time, give AI a "Canvas" instead of fixed lines. With that GUI/"Canvas", you can interact with AI more freely, and AI can give you feedback in a much richer and more dynamic way. Whether you're asking AI to do research in some field, or to make a plan for something, you'll get a website or application back, instead of lines of text to scan over and over.
 
 [Learn more about this idea on YouTube](https://youtu.be/ZjUs5zavs3E).
 
 ## What is ToutKit
-
-<p align="center">
-  <img src="screenshots/how-it-works.gif" alt="ToutKit interface — sidebar of notes, embedded webview, and terminal" width="800">
-</p>
 
 **"Chrome + VS Code"**
 - **A terminal inside**: Just use Claude Code/Codex/Gemini CLI directly, like what you do in VS Code
