@@ -1,6 +1,9 @@
 <p align="center">
   <img src="assets/logo.png" alt="ToutKit logo" height="80">
-  <img src="assets/logo-fullname.png" alt="ToutKit" height="80">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/logo-fullname-dark.png">
+    <img src="assets/logo-fullname.png" alt="ToutKit" height="80">
+  </picture>
 </p>
 
 <h1 align="center">A notebook for vibe-coded websites</h1>
