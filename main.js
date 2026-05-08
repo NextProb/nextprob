@@ -4531,9 +4531,13 @@ ipcMain.handle('export:standalone', async (_e, notePath) => {
   const indexPath = path.join(noteFolderPath, 'index.html');
   if (!fs.existsSync(indexPath)) return { error: 'Not a valid note (no index.html found)' };
 
-  // Locate the pre-built template skeleton
+  // Locate the pre-built template skeleton. In packaged builds the prebuilt
+  // .app ships via electron-builder's `extraResources` (kept out of app.asar
+  // so framework symlinks survive); in dev it lives next to the source.
   const templateAppName = 'ExportedNote.app';
-  const templateDir = path.join(__dirname, 'export-app-template', 'dist', 'ExportedNote-darwin-arm64');
+  const templateDir = app.isPackaged
+    ? path.join(process.resourcesPath, 'export-template')
+    : path.join(__dirname, 'export-app-template', 'prebuilt', 'ExportedNote-darwin-arm64');
   const templateApp = path.join(templateDir, templateAppName);
   if (!fs.existsSync(templateApp)) {
     return { error: 'Export template not built. Run: node scripts/build-export-template.js' };
@@ -4675,11 +4679,14 @@ ipcMain.handle('export:standalone-source', async (_e, notePath_) => {
   try {
     fs.mkdirSync(destDir, { recursive: true });
 
-    // Copy template source files
-    const templateDir = path.join(__dirname, 'export-app-template');
+    // Copy template source files. Packaged builds ship them via
+    // electron-builder's `extraResources`; in dev they live in the repo.
+    const templateSourceDir = app.isPackaged
+      ? path.join(process.resourcesPath, 'export-template-source')
+      : path.join(__dirname, 'export-app-template');
     const sourceFiles = ['main.js', 'preload.js', 'note-db.js'];
     for (const file of sourceFiles) {
-      const src = path.join(templateDir, file);
+      const src = path.join(templateSourceDir, file);
       if (fs.existsSync(src)) fs.copyFileSync(src, path.join(destDir, file));
     }
 
@@ -4701,10 +4708,7 @@ ipcMain.handle('export:standalone-source', async (_e, notePath_) => {
     );
 
     // Write package.json with build scripts
-    const electronPkg = JSON.parse(
-      fs.readFileSync(path.join(__dirname, 'node_modules', 'electron', 'package.json'), 'utf8')
-    );
-    const electronVersion = electronPkg.version;
+    const electronVersion = process.versions.electron;
     const pkgJson = {
       name: safeTitle.toLowerCase().replace(/[^a-z0-9-]/g, '-'),
       version: '1.0.0',

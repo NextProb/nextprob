@@ -1,6 +1,6 @@
 {
   "name": "toutkit",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "main": "main.js",
   "license": "AGPL-3.0-only",
   "author": "Helicase Space LLC <contact@helicase.space>",
@@ -34,8 +34,8 @@
       "providers/**/*",
       "renderer/**/*",
       "assets/**/*",
+      "share-renderer/**/*",
       "package.json",
-      "export-app-template/dist/**/*",
       "terminal/**/*",
       "!tests/**",
       "!test-results/**",
@@ -44,6 +44,24 @@
     ],
     "asarUnpack": [
       "node_modules/node-pty/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "export-app-template/prebuilt/ExportedNote-darwin-arm64",
+        "to": "export-template"
+      },
+      {
+        "from": "export-app-template/main.js",
+        "to": "export-template-source/main.js"
+      },
+      {
+        "from": "export-app-template/preload.js",
+        "to": "export-template-source/preload.js"
+      },
+      {
+        "from": "export-app-template/note-db.js",
+        "to": "export-template-source/note-db.js"
+      }
     ],
     "icon": "assets/icon",
     "afterSign": "scripts/notarize.cjs",

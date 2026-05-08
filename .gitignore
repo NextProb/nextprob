@@ -22,7 +22,7 @@ blob-report/
 
 # Export template build artifacts
 export-app-template/node_modules/
-export-app-template/dist/
+export-app-template/prebuilt/
 export-app-template/note-viewer.css
 
 # Local config — copy auth-config.example.json to auth-config.json and fill in.

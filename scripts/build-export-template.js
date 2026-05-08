@@ -5,7 +5,7 @@
 // Usage: node scripts/build-export-template.js
 //
 // Requires: npm install --save-dev @electron/packager
-// Output:   export-app-template/dist/ExportedNote-darwin-arm64/ExportedNote.app
+// Output:   export-app-template/prebuilt/ExportedNote-darwin-arm64/ExportedNote.app
 
 const path = require('path');
 const fs = require('fs');
@@ -13,7 +13,7 @@ const { execSync } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..');
 const TEMPLATE_DIR = path.join(ROOT, 'export-app-template');
-const DIST_DIR = path.join(TEMPLATE_DIR, 'dist');
+const PREBUILT_DIR = path.join(TEMPLATE_DIR, 'prebuilt');
 
 async function main() {
   // 1. Install dependencies in the template (just better-sqlite3)
@@ -34,7 +34,7 @@ async function main() {
   const electronVersion = electronPkg.version;
   console.log(`Rebuilding native modules for Electron ${electronVersion}...`);
   execSync(
-    `npx @electron/rebuild --module-dir "${TEMPLATE_DIR}" --electron-version ${electronVersion} --arch arm64`,
+    `npx @electron/rebuild --module-dir "${TEMPLATE_DIR}" --version ${electronVersion} --arch arm64`,
     { cwd: ROOT, stdio: 'inherit' }
   );
 
@@ -42,8 +42,8 @@ async function main() {
   console.log('Packaging template app...');
 
   // Clean previous output
-  if (fs.existsSync(DIST_DIR)) {
-    fs.rmSync(DIST_DIR, { recursive: true });
+  if (fs.existsSync(PREBUILT_DIR)) {
+    fs.rmSync(PREBUILT_DIR, { recursive: true });
   }
 
   // Use electron-packager (dynamically imported or required)
@@ -57,14 +57,14 @@ async function main() {
 
   const appPaths = await packager({
     dir: TEMPLATE_DIR,
-    out: DIST_DIR,
+    out: PREBUILT_DIR,
     name: 'ExportedNote',
     platform: 'darwin',
     arch: 'arm64',
     electronVersion,
     overwrite: true,
-    // Don't package dist/ or any leftover files
-    ignore: [/^\/dist/, /\.tmp$/],
+    // Don't package prebuilt/ or any leftover files
+    ignore: [/^\/prebuilt/, /\.tmp$/],
     // Prune dev dependencies from the packaged output
     prune: true,
   });
