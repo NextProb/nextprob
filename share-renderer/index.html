@@ -6,8 +6,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <title>Shared note</title>
+<meta name="color-scheme" content="dark light">
 <style>
-  html,body{margin:0;height:100%;background:#000;color:#ccc;font:14px system-ui,-apple-system,sans-serif}
+  html,body{margin:0;height:100%;background:#181c1c;color:#e0e0e0;font:14px system-ui,-apple-system,sans-serif}
+  @media (prefers-color-scheme: light){
+    html,body{background:#ffffff;color:#121e1d}
+  }
   #frame{display:block;border:0;width:100%;height:100%}
   #status{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center}
 </style>
@@ -42,7 +46,7 @@
   iframe.setAttribute('sandbox', 'allow-scripts');
   iframe.setAttribute('allow', 'fullscreen; pointer-lock');
   iframe.referrerPolicy = 'no-referrer';
-  iframe.src = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+  iframe.src = URL.createObjectURL(new Blob([html], { type: 'text/html;charset=utf-8' }));
   status.remove();
   document.body.appendChild(iframe);
 })();

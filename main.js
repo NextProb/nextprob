@@ -32,6 +32,13 @@ const { activeProvider, generateSessionId, listProviders, setActiveProvider, set
 const { getRemotePresets, mergePresetsWithEndpoints, resetEndpointToPreset } = require('./providers/openai-compat-presets');
 const { getRemoteManifest, downloadTemplateFolders } = require('./providers/remote-templates');
 const NOTE_CSS = fs.readFileSync(path.join(__dirname, 'note-viewer.css'), 'utf8');
+// Share variant: shared/exported HTML can't use webview.insertCSS or [data-theme],
+// so swap the [data-theme="light"] block for prefers-color-scheme so the rendered
+// page follows the reader's OS preference.
+const SHARE_NOTE_CSS = NOTE_CSS.replace(
+  /:root\[data-theme="light"\]\s*\{([\s\S]*?)\}/,
+  '@media (prefers-color-scheme: light) {\n  :root {$1}\n}'
+);
 const prefs = require("./preferences");
 
 function getThemeAttr() {
@@ -4315,6 +4322,31 @@ function inlineNoteAsHtml(noteFolderPath) {
   html = html.replace(/style=["']([^"']*url\([^)]+\)[^"']*)["']/gi, (_m, styleVal) => {
     return `style="${inlineCssUrls(styleVal)}"`;
   });
+
+  // Ensure UTF-8 charset is declared. Prevents mojibake when the gist is
+  // loaded via a blob: iframe or viewed directly on gist.github.com.
+  if (!/<meta[^>]+charset\s*=/i.test(html)) {
+    const charsetMeta = '<meta charset="utf-8">';
+    if (/<head[^>]*>/i.test(html)) {
+      html = html.replace(/<head([^>]*)>/i, `<head$1>\n${charsetMeta}`);
+    } else if (/<html[^>]*>/i.test(html)) {
+      html = html.replace(/<html([^>]*)>/i, `<html$1>\n<head>${charsetMeta}</head>`);
+    } else {
+      html = `${charsetMeta}\n${html}`;
+    }
+  }
+
+  // Inject the note-viewer stylesheet so exported/shared notes match the in-app
+  // theme. Placed last in <head> to override author defaults, matching how
+  // webview.insertCSS layers it inside the app.
+  const styleBlock = `<style data-source="toutkit-share">\n${SHARE_NOTE_CSS}</style>`;
+  if (/<\/head>/i.test(html)) {
+    html = html.replace(/<\/head>/i, `${styleBlock}\n</head>`);
+  } else if (/<body[^>]*>/i.test(html)) {
+    html = html.replace(/<body([^>]*)>/i, `<body$1>\n${styleBlock}`);
+  } else {
+    html = `${styleBlock}\n${html}`;
+  }
 
   const usesBackendAPIs = /\b(noteDB|noteFiles|noteSQL|noteScripts|noteLog)\b/.test(html);
 
