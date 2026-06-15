@@ -440,7 +440,7 @@
     </div>
   </div>
 
-  <!-- Graph View Modal (feature 127) -->
+  <!-- GRAPH DISABLED — Graph View Modal (feature 127)
   <div id="graph-modal" class="hidden">
     <div class="modal-backdrop"></div>
     <div class="graph-container glass">
@@ -451,6 +451,7 @@
       <div id="graph-canvas"></div>
     </div>
   </div>
+  -->
 
   <!-- Endpoints settings modal (feature 130) -->
   <div id="endpoints-modal" class="hidden">
@@ -633,15 +634,19 @@
           </div>
         </div>
       </div>
+      <!-- SEARCH DISABLED
       <div class="sidebar-search">
         <svg class="search-icon-static" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/></svg>
         <input type="text" id="search-input" placeholder="Search files and content…" autocomplete="off" spellcheck="false" />
         <button type="button" id="search-clear" class="search-clear hidden" aria-label="Clear search">×</button>
       </div>
+      -->
+      <!-- TAGS DISABLED
       <div id="tag-filter-bar" class="tag-filter-bar hidden" role="status" aria-live="polite">
         <span class="tag-filter-bar-label">Tags: <span id="tag-filter-bar-name"></span> <span id="tag-filter-bar-count" class="tag-filter-bar-count"></span></span>
         <button type="button" id="tag-filter-clear" class="tag-filter-clear" aria-label="Clear tag filter">×</button>
       </div>
+      -->
       <!-- Favorites section (feature 120) -->
       <div id="favorites-section" class="favorites-section hidden">
         <div class="favorites-section-header" id="favorites-section-header"
@@ -671,7 +676,7 @@
         </div>
       </div>
 
-      <!-- Tags section (feature 98) -->
+      <!-- TAGS DISABLED — Tags section (feature 98)
       <div id="tags-section" class="tags-section">
         <div class="tags-section-header" id="tags-section-header"
              role="button" tabindex="0" aria-expanded="true" aria-controls="tags-section-body">
@@ -697,12 +702,15 @@
           <ul class="tags-list" id="tags-list" role="listbox" aria-label="Filter notes by tag"></ul>
         </div>
       </div>
+      -->
 
       <div class="sidebar-footer">
+        <!-- SEARCH DISABLED
         <div id="index-progress" class="index-progress hidden">
           <span class="spinner"></span>
           <span id="index-progress-text">Indexing notes…</span>
         </div>
+        -->
 
         <!-- Auth section (feature 141) -->
         <div id="auth-section" class="auth-section">
@@ -899,6 +907,7 @@
             <div id="outline-empty" class="outline-empty">No note selected</div>
             <ul id="outline-tree" class="hidden"></ul>
           </div>
+          <!-- BACKLINKS DISABLED
           <div id="backlinks-section">
             <div class="backlinks-header">
               <span class="backlinks-title">Backlinks</span>
@@ -909,6 +918,7 @@
               <ul id="backlinks-list" class="hidden"></ul>
             </div>
           </div>
+          -->
         </div>
         <div id="storage-tab-content" class="hidden">
         <div id="storage-section">

@@ -48,17 +48,20 @@ function getThemeAttr() {
 }
 const conversations = require('./conversations');
 const sync = require('./sync');
-const searchIndex = require('./search-index');
-const { parseSearchQuery } = require('./search-query-parser');
-const builder = require('./search-index-builder');
-const searchIncremental = require('./search-incremental');
+// SEARCH DISABLED
+// const searchIndex = require('./search-index');
+// const { parseSearchQuery } = require('./search-query-parser');
+// GRAPH DISABLED — builder was only used by graph:getData
+// const builder = require('./search-index-builder');
+// const searchIncremental = require('./search-incremental');
 const Database = require('better-sqlite3');
-const tagsIndex = require('./tags-index');
+// TAGS/BACKLINKS DISABLED
+// const tagsIndex = require('./tags-index');
 const templatesRegistry = require('./templates-registry');
 const builtInTemplates = require('./built-in-templates');
 const favorites = require('./favorites');
-const backlinksIndex = require('./backlinks-index');
-const { parseTagsFromFile, writeTagsToFile, isValidTagName } = require('./tags');
+// const backlinksIndex = require('./backlinks-index');
+// const { parseTagsFromFile, writeTagsToFile, isValidTagName } = require('./tags');
 const exportModule = require('./export');
 require('./pdf-export'); // registers real PDF converter (feature 103)
 require('./markdown-export'); // registers Markdown converter (feature 104)
@@ -427,49 +430,50 @@ async function openWorkspace(wsPath) {
   // Server sync (SSH/SFTP): init endpoints that have sync enabled
   _initServerSyncEndpoints(wsPath);
 
-  // Initialize and build search index asynchronously (feature 80).
-  // Abort any in-progress build from a previous workspace (e.g., rapid switch).
-  if (_indexController) _indexController.abort();
-  _indexController = new AbortController();
-  const { signal: _indexSignal } = _indexController;
+  // SEARCH/TAGS/BACKLINKS DISABLED — AbortController no longer needed
+  // if (_indexController) _indexController.abort();
+  // _indexController = new AbortController();
+  // const { signal: _indexSignal } = _indexController;
 
-  searchIndex.init(wsPath);
-  searchIncremental.setReady(false); // queue events until initial build completes
-  tagsIndex.init();
-  tagsIndex.setReady(false); // queue events until initial build completes
-  backlinksIndex.init();
-  backlinksIndex.setReady(false); // queue events until initial build completes
-  builder.buildIndex(wsPath, {
-    onProgress: (current, total) => {
-      mainWindow?.webContents.send('search:indexProgress', { current, total });
-    },
-    signal: _indexSignal,
-  }).then(summary => {
-    mainWindow?.webContents.send('search:indexComplete', summary);
-    searchIncremental.setReady(true); // replay queued events and go live
-  }).catch(err => {
-    if (err.name !== 'AbortError') {
-      console.error('[search-builder] Indexing failed:', err);
-      mainWindow?.webContents.send('search:indexError', { message: err.message });
-    }
-    // On abort or error, stay in queued mode — stop() will clear on workspace switch.
-  });
+  // searchIndex.init(wsPath);
+  // searchIncremental.setReady(false); // queue events until initial build completes
+  // TAGS/BACKLINKS DISABLED
+  // tagsIndex.init();
+  // tagsIndex.setReady(false); // queue events until initial build completes
+  // backlinksIndex.init();
+  // backlinksIndex.setReady(false); // queue events until initial build completes
+  // builder.buildIndex(wsPath, {
+  //   onProgress: (current, total) => {
+  //     mainWindow?.webContents.send('search:indexProgress', { current, total });
+  //   },
+  //   signal: _indexSignal,
+  // }).then(summary => {
+  //   mainWindow?.webContents.send('search:indexComplete', summary);
+  //   searchIncremental.setReady(true); // replay queued events and go live
+  // }).catch(err => {
+  //   if (err.name !== 'AbortError') {
+  //     console.error('[search-builder] Indexing failed:', err);
+  //     mainWindow?.webContents.send('search:indexError', { message: err.message });
+  //   }
+  //   // On abort or error, stay in queued mode — stop() will clear on workspace switch.
+  // });
 
-  tagsIndex.buildIndex(wsPath, { signal: _indexSignal }).then(() => {
-    tagsIndex.setReady(true); // replay queued events and go live
-  }).catch(err => {
-    if (err.name !== 'AbortError') {
-      console.error('[tags-index] Build failed:', err);
-    }
-  });
+  // TAGS/BACKLINKS DISABLED
+  // tagsIndex.buildIndex(wsPath, { signal: _indexSignal }).then(() => {
+  //   tagsIndex.setReady(true); // replay queued events and go live
+  // }).catch(err => {
+  //   if (err.name !== 'AbortError') {
+  //     console.error('[tags-index] Build failed:', err);
+  //   }
+  // });
 
-  backlinksIndex.buildIndex(wsPath, { signal: _indexSignal }).then(() => {
-    backlinksIndex.setReady(true); // replay queued events and go live
-  }).catch(err => {
-    if (err.name !== 'AbortError') {
-      console.error('[backlinks-index] Build failed:', err);
-    }
-  });
+  // backlinksIndex.buildIndex(wsPath, { signal: _indexSignal }).then(() => {
+  //   backlinksIndex.setReady(true); // replay queued events and go live
+  // }).catch(err => {
+  //   if (err.name !== 'AbortError') {
+  //     console.error('[backlinks-index] Build failed:', err);
+  //   }
+  // });
 }
 
 function createWindow() {
@@ -528,13 +532,14 @@ function createWindow() {
     {
       label: 'View',
       submenu: [
-        {
-          label: 'Graph View',
-          accelerator: 'CmdOrCtrl+Shift+G',
-          click() {
-            mainWindow?.webContents.send('graph:open');
-          },
-        },
+          // TAGS/BACKLINKS/GRAPH DISABLED
+          // {
+          //   label: 'Graph View',
+          //   accelerator: 'CmdOrCtrl+Shift+G',
+          //   click() {
+          //     mainWindow?.webContents.send('graph:open');
+          //   },
+          // },
         { type: 'separator' },
         {
           label: 'Toggle Terminal',
@@ -951,9 +956,10 @@ function stopWatching() {
   clearTimeout(_favUnlinkTimer);
   clearTimeout(_tagsChangedTimer);
   clearTimeout(_backlinksChangedTimer);
-  searchIncremental.stop();
-  tagsIndex.stop();
-  backlinksIndex.stop();
+  // SEARCH DISABLED — searchIncremental.stop();
+  // TAGS/BACKLINKS DISABLED
+  // tagsIndex.stop();
+  // backlinksIndex.stop();
   templatesRegistry.stop();
   if (watcher) {
     watcher.close();
@@ -1106,9 +1112,10 @@ function watchWorkspace() {
     sync.notifyFileChange();
   });
 
-  searchIncremental.start(watcher); // attach incremental index listeners
-  tagsIndex.start(watcher);
-  backlinksIndex.start(watcher); // attach backlinks index listeners (feature 126)
+  // SEARCH DISABLED — searchIncremental.start(watcher); // attach incremental index listeners
+  // TAGS/BACKLINKS DISABLED
+  // tagsIndex.start(watcher);
+  // backlinksIndex.start(watcher); // attach backlinks index listeners (feature 126)
   templatesRegistry.start(watcher);
   builtInTemplates.start(watcher, path.join(workspacePath, TEMPLATES_DIR_NAME), _remoteManifest ? Object.keys(_remoteManifest) : []);
 
@@ -1209,45 +1216,45 @@ function watchWorkspace() {
     mainWindow?.webContents.send('templates:updated', templatesRegistry.getAll());
   });
 
-  // Forward tags change events to renderer (feature 98 + 99)
-  let _pendingTagChanges = [];
-  let _pendingFullRefresh = false;
-
-  const _scheduleTagsChanged = () => {
-    clearTimeout(_tagsChangedTimer);
-    _tagsChangedTimer = setTimeout(() => {
-      if (_pendingFullRefresh) {
-        mainWindow?.webContents.send('tags:changed', null); // null = full refresh
-      } else {
-        mainWindow?.webContents.send('tags:changed', [..._pendingTagChanges]);
-      }
-      _pendingTagChanges = [];
-      _pendingFullRefresh = false;
-    }, 100);
-  };
-
-  tagsIndex.on('tags-changed', ({ filePath, newTags }) => {
-    _pendingTagChanges.push({ filePath, newTags });
-    _scheduleTagsChanged();
-  });
-  tagsIndex.on('build-complete', () => {
-    _pendingFullRefresh = true;
-    _scheduleTagsChanged();
-  });
-
-  // Forward backlinks change events to renderer (feature 126)
-  let _pendingBacklinksPaths = new Set();
-  backlinksIndex.on('backlinks-changed', ({ affectedTargets }) => {
-    if (!workspacePath || !mainWindow) return;
-    for (const absPath of affectedTargets) {
-      _pendingBacklinksPaths.add(absPath);
-    }
-    clearTimeout(_backlinksChangedTimer);
-    _backlinksChangedTimer = setTimeout(() => {
-      mainWindow?.webContents.send('backlinks:changed', [..._pendingBacklinksPaths]);
-      _pendingBacklinksPaths = new Set();
-    }, 100);
-  });
+  // TAGS/BACKLINKS DISABLED — Forward tags change events to renderer (feature 98 + 99)
+  // let _pendingTagChanges = [];
+  // let _pendingFullRefresh = false;
+  //
+  // const _scheduleTagsChanged = () => {
+  //   clearTimeout(_tagsChangedTimer);
+  //   _tagsChangedTimer = setTimeout(() => {
+  //     if (_pendingFullRefresh) {
+  //       mainWindow?.webContents.send('tags:changed', null); // null = full refresh
+  //     } else {
+  //       mainWindow?.webContents.send('tags:changed', [..._pendingTagChanges]);
+  //     }
+  //     _pendingTagChanges = [];
+  //     _pendingFullRefresh = false;
+  //   }, 100);
+  // };
+  //
+  // tagsIndex.on('tags-changed', ({ filePath, newTags }) => {
+  //   _pendingTagChanges.push({ filePath, newTags });
+  //   _scheduleTagsChanged();
+  // });
+  // tagsIndex.on('build-complete', () => {
+  //   _pendingFullRefresh = true;
+  //   _scheduleTagsChanged();
+  // });
+  //
+  // // Forward backlinks change events to renderer (feature 126)
+  // let _pendingBacklinksPaths = new Set();
+  // backlinksIndex.on('backlinks-changed', ({ affectedTargets }) => {
+  //   if (!workspacePath || !mainWindow) return;
+  //   for (const absPath of affectedTargets) {
+  //     _pendingBacklinksPaths.add(absPath);
+  //   }
+  //   clearTimeout(_backlinksChangedTimer);
+  //   _backlinksChangedTimer = setTimeout(() => {
+  //     mainWindow?.webContents.send('backlinks:changed', [..._pendingBacklinksPaths]);
+  //     _pendingBacklinksPaths = new Set();
+  //   }, 100);
+  // });
 }
 
 const { fetchText } = require('./providers/remote-models');
@@ -1256,89 +1263,90 @@ const CLAUDE_MD_MARKER_START = '<!-- APP-DEFAULT (do not edit — this section i
 const CLAUDE_MD_MARKER_END = '<!-- /APP-DEFAULT -->';
 const { claudeMdUrl: CLAUDE_MD_REMOTE_URL } = require('./content-urls');
 
-const GRAPH_LINK_SKILL_TEMPLATE = `# Graph Link Skill
+// TAGS/BACKLINKS/GRAPH DISABLED — GRAPH_LINK_SKILL_TEMPLATE
+// const GRAPH_LINK_SKILL_TEMPLATE = `# Graph Link Skill
+//
+// When creating or editing a note, link it to related existing notes.
+//
+// ## Before writing a new note
+//
+// 1. Use the Glob tool to list all \`.html\` files in the workspace root.
+// 2. Skim filenames for topically related notes.
+// 3. Read the 1–3 most relevant files to confirm they are related.
+//
+// ## Inline links
+//
+// Within the note body, add \`<a href="filename.html">link text</a>\` wherever a
+// natural reference to another note arises.
+//
+// ## Related Notes footer
+//
+// At the end of every note, inside \`<article>\` and after the main content, add:
+//
+// \`\`\`html
+// <footer class="related-notes">
+//   <h2>Related Notes</h2>
+//   <ul>
+//     <li><a href="related-note.html">Related Note Title</a></li>
+//   </ul>
+// </footer>
+// \`\`\`
+//
+// - Omit the footer entirely if no related notes exist.
+// - List only notes that are genuinely related — 1 to 5 links at most.
+//
+// ## Backlinks
+//
+// If you create a note that is strongly related to an existing note that already
+// has a \`<footer class="related-notes">\` section, add a backlink in that
+// existing note pointing to the new note.
+// `;
 
-When creating or editing a note, link it to related existing notes.
+// TAGS DISABLED — buildTagsHint()
+// /**
+//  * Build a concise tags hint block to prepend to every Claude prompt.
+//  * Reads from the in-memory tags index — no I/O.
+//  * Returns a one- or two-line string describing available tags.
+//  *
+//  * If the index is not ready or empty, returns a "no tags yet" hint so
+//  * Claude still generates sensible tags for new notes.
+//  * If the index has more than 30 tags, sends only the top 30 by usage count.
+//  */
+// function buildTagsHint() {
+//   let allTags;
+//   try {
+//     allTags = tagsIndex.getAllTags(); // [{ tag, count }] sorted alphabetically
+//   } catch {
+//     return '[No tags exist in this workspace yet. When creating notes, add sensible tags based on the content.]';
+//   }
+//   if (!allTags || allTags.length === 0) {
+//     return '[No tags exist in this workspace yet. When creating notes, add sensible tags based on the content.]';
+//   }
+//   const sorted = [...allTags].sort((a, b) => b.count - a.count);
+//   const top = sorted.slice(0, 30);
+//   const tagList = top.map(t => t.tag).join(', ');
+//   const suffix = allTags.length > 30 ? ` (showing top 30 of ${allTags.length})` : '';
+//   return `[Available tags in this workspace: ${tagList}]${suffix}\n(Reuse existing tags when applicable. Create new tags only when no existing tag fits.)`;
+// }
 
-## Before writing a new note
-
-1. Use the Glob tool to list all \`.html\` files in the workspace root.
-2. Skim filenames for topically related notes.
-3. Read the 1–3 most relevant files to confirm they are related.
-
-## Inline links
-
-Within the note body, add \`<a href="filename.html">link text</a>\` wherever a
-natural reference to another note arises.
-
-## Related Notes footer
-
-At the end of every note, inside \`<article>\` and after the main content, add:
-
-\`\`\`html
-<footer class="related-notes">
-  <h2>Related Notes</h2>
-  <ul>
-    <li><a href="related-note.html">Related Note Title</a></li>
-  </ul>
-</footer>
-\`\`\`
-
-- Omit the footer entirely if no related notes exist.
-- List only notes that are genuinely related — 1 to 5 links at most.
-
-## Backlinks
-
-If you create a note that is strongly related to an existing note that already
-has a \`<footer class="related-notes">\` section, add a backlink in that
-existing note pointing to the new note.
-`;
-
-/**
- * Build a concise tags hint block to prepend to every Claude prompt.
- * Reads from the in-memory tags index — no I/O.
- * Returns a one- or two-line string describing available tags.
- *
- * If the index is not ready or empty, returns a "no tags yet" hint so
- * Claude still generates sensible tags for new notes.
- * If the index has more than 30 tags, sends only the top 30 by usage count.
- */
-function buildTagsHint() {
-  let allTags;
-  try {
-    allTags = tagsIndex.getAllTags(); // [{ tag, count }] sorted alphabetically
-  } catch {
-    return '[No tags exist in this workspace yet. When creating notes, add sensible tags based on the content.]';
-  }
-  if (!allTags || allTags.length === 0) {
-    return '[No tags exist in this workspace yet. When creating notes, add sensible tags based on the content.]';
-  }
-  // Sort by count descending; stable alphabetical order for ties is preserved
-  // because getAllTags() already returns alphabetically sorted results.
-  const sorted = [...allTags].sort((a, b) => b.count - a.count);
-  const top = sorted.slice(0, 30);
-  const tagList = top.map(t => t.tag).join(', ');
-  const suffix = allTags.length > 30 ? ` (showing top 30 of ${allTags.length})` : '';
-  return `[Available tags in this workspace: ${tagList}]${suffix}\n(Reuse existing tags when applicable. Create new tags only when no existing tag fits.)`;
-}
-
-/**
- * Read .claude/graph-link-skill.md from the current workspace and return its
- * content wrapped in delimiters, ready to be prepended to the Claude prompt.
- * Returns an empty string if the file does not exist or is empty.
- * Reads from disk each time so the user can edit the file without restarting.
- */
-function buildGraphLinkHint(wsPath) {
-  if (!wsPath) return '';
-  const skillPath = path.join(wsPath, '.claude', 'graph-link-skill.md');
-  try {
-    const content = fs.readFileSync(skillPath, 'utf8').trim();
-    if (!content) return '';
-    return '[Graph Link Skill]\n' + content + '\n[/Graph Link Skill]';
-  } catch {
-    return '';
-  }
-}
+// GRAPH DISABLED — buildGraphLinkHint()
+// /**
+//  * Read .claude/graph-link-skill.md from the current workspace and return its
+//  * content wrapped in delimiters, ready to be prepended to the Claude prompt.
+//  * Returns an empty string if the file does not exist or is empty.
+//  * Reads from disk each time so the user can edit the file without restarting.
+//  */
+// function buildGraphLinkHint(wsPath) {
+//   if (!wsPath) return '';
+//   const skillPath = path.join(wsPath, '.claude', 'graph-link-skill.md');
+//   try {
+//     const content = fs.readFileSync(skillPath, 'utf8').trim();
+//     if (!content) return '';
+//     return '[Graph Link Skill]\n' + content + '\n[/Graph Link Skill]';
+//   } catch {
+//     return '';
+//   }
+// }
 
 /**
  * Provider instruction file descriptors.
@@ -1488,13 +1496,14 @@ async function ensureNotesAppGitignore(wsPath) {
 
 function bootstrapWorkspace(dirPath) {
   const claudeDir = path.join(dirPath, ".claude");
-  const graphLinkSkillPath = path.join(claudeDir, "graph-link-skill.md");
+  // GRAPH DISABLED — graph-link-skill.md bootstrapping
+  // const graphLinkSkillPath = path.join(claudeDir, "graph-link-skill.md");
   if (!fs.existsSync(claudeDir)) {
     fs.mkdirSync(claudeDir, { recursive: true });
   }
-  if (!fs.existsSync(graphLinkSkillPath)) {
-    fs.writeFileSync(graphLinkSkillPath, GRAPH_LINK_SKILL_TEMPLATE);
-  }
+  // if (!fs.existsSync(graphLinkSkillPath)) {
+  //   fs.writeFileSync(graphLinkSkillPath, GRAPH_LINK_SKILL_TEMPLATE);
+  // }
   // Ensure all provider instruction files exist and sync from remote
   syncAllProviderInstructions(dirPath).catch(() => {});
 }
@@ -2496,39 +2505,39 @@ ipcMain.handle('sync:listBranches', async () => {
   return sync.listBranches(workspacePath);
 });
 
-// --- Search IPC ---
+// SEARCH DISABLED — Search IPC
+//
+// ipcMain.handle('search:query', (_e, queryString) => {
+//   if (!searchIndex.isReady()) return { ready: false };
+//   if (!queryString || !queryString.trim()) return { results: [], parsed: null };
+//   try {
+//     const results = searchIndex.query(queryString);
+//     const parsed = parseSearchQuery(queryString);
+//     return { results, parsed };
+//   } catch (err) {
+//     console.error('[search:query] error:', err);
+//     return { error: err.message };
+//   }
+// });
 
-ipcMain.handle('search:query', (_e, queryString) => {
-  if (!searchIndex.isReady()) return { ready: false };
-  if (!queryString || !queryString.trim()) return { results: [], parsed: null };
-  try {
-    const results = searchIndex.query(queryString);
-    const parsed = parseSearchQuery(queryString);
-    return { results, parsed };
-  } catch (err) {
-    console.error('[search:query] error:', err);
-    return { error: err.message };
-  }
-});
-
-// --- Tags IPC ---
-
-// Per-file promise-chain lock: serializes concurrent write operations on the
-// same file to prevent read-modify-write races. Map<filePath, Promise>.
-const _fileLocks = new Map();
-
-function _withFileLock(filePath, fn) {
-  const prev = _fileLocks.get(filePath) || Promise.resolve();
-  const next = prev.then(fn).finally(() => {
-    if (_fileLocks.get(filePath) === next) _fileLocks.delete(filePath);
-  });
-  _fileLocks.set(filePath, next);
-  return next;
-}
-
-ipcMain.handle('tags:list', () => {
-  return tagsIndex.getAllTags();
-});
+// TAGS/BACKLINKS DISABLED — Tags IPC
+//
+// // Per-file promise-chain lock: serializes concurrent write operations on the
+// // same file to prevent read-modify-write races. Map<filePath, Promise>.
+// const _fileLocks = new Map();
+//
+// function _withFileLock(filePath, fn) {
+//   const prev = _fileLocks.get(filePath) || Promise.resolve();
+//   const next = prev.then(fn).finally(() => {
+//     if (_fileLocks.get(filePath) === next) _fileLocks.delete(filePath);
+//   });
+//   _fileLocks.set(filePath, next);
+//   return next;
+// }
+//
+// ipcMain.handle('tags:list', () => {
+//   return tagsIndex.getAllTags();
+// });
 
 ipcMain.handle('templates:list', () => {
   return templatesRegistry.getAll();
@@ -2680,147 +2689,144 @@ ipcMain.handle('preferences:setSidebarStateKey', (_e, wsPath, key, value) => {
   _debugLog('[main] setSidebarStateKey done. verify: ' + JSON.stringify(prefs.getSidebarState(wsPath)));
 });
 
-ipcMain.handle('tags:files', (_e, tag) => {
-  if (typeof tag !== 'string' || !tag.trim()) {
-    return { success: false, error: 'Tag name is required' };
-  }
-  return tagsIndex.getFilesByTag(tag);
-});
+// TAGS/BACKLINKS DISABLED — tags:files, tags:add, tags:remove, tags:all-file-tags
+//
+// ipcMain.handle('tags:files', (_e, tag) => {
+//   if (typeof tag !== 'string' || !tag.trim()) {
+//     return { success: false, error: 'Tag name is required' };
+//   }
+//   return tagsIndex.getFilesByTag(tag);
+// });
+//
+// ipcMain.handle('tags:add', async (_e, filePath, tagNames) => {
+//   if (!workspacePath) return { success: false, error: 'No workspace open' };
+//   if (typeof filePath !== 'string' || !filePath) return { success: false, error: 'filePath is required' };
+//   if (!isInsideWorkspace(filePath)) return { success: false, error: 'Path is outside the workspace' };
+//   if (!Array.isArray(tagNames) || tagNames.length === 0) return { success: false, error: 'tagNames must be a non-empty array' };
+//   const invalid = tagNames.filter(t => !isValidTagName(t));
+//   if (invalid.length > 0) return { success: false, error: `Invalid tag names: ${invalid.join(', ')}` };
+//   try {
+//     await fs.promises.access(filePath);
+//   } catch {
+//     return { success: false, error: 'File not found' };
+//   }
+//   return _withFileLock(filePath, async () => {
+//     try {
+//       const current = await parseTagsFromFile(filePath);
+//       const lowerExisting = new Set(current.map(t => t.toLowerCase()));
+//       const toAdd = tagNames.filter(t => !lowerExisting.has(t.toLowerCase()));
+//       if (toAdd.length > 0) {
+//         await writeTagsToFile(filePath, [...current, ...toAdd]);
+//         await tagsIndex.refreshFile(filePath);
+//       }
+//       return { success: true };
+//     } catch (err) {
+//       return { success: false, error: err.message };
+//     }
+//   });
+// });
+//
+// ipcMain.handle('tags:remove', async (_e, filePath, tagNames) => {
+//   if (!workspacePath) return { success: false, error: 'No workspace open' };
+//   if (typeof filePath !== 'string' || !filePath) return { success: false, error: 'filePath is required' };
+//   if (!isInsideWorkspace(filePath)) return { success: false, error: 'Path is outside the workspace' };
+//   if (!Array.isArray(tagNames) || tagNames.length === 0) return { success: false, error: 'tagNames must be a non-empty array' };
+//   const invalid = tagNames.filter(t => !isValidTagName(t));
+//   if (invalid.length > 0) return { success: false, error: `Invalid tag names: ${invalid.join(', ')}` };
+//   try {
+//     await fs.promises.access(filePath);
+//   } catch {
+//     return { success: false, error: 'File not found' };
+//   }
+//   return _withFileLock(filePath, async () => {
+//     try {
+//       const current = await parseTagsFromFile(filePath);
+//       const lowerRemove = new Set(tagNames.map(t => t.toLowerCase()));
+//       const remaining = current.filter(t => !lowerRemove.has(t.toLowerCase()));
+//       if (remaining.length !== current.length) {
+//         await writeTagsToFile(filePath, remaining);
+//         await tagsIndex.refreshFile(filePath);
+//       }
+//       return { success: true };
+//     } catch (err) {
+//       return { success: false, error: err.message };
+//     }
+//   });
+// });
+//
+// ipcMain.handle('tags:all-file-tags', () => {
+//   return tagsIndex.getAllFileTags();
+// });
 
-ipcMain.handle('tags:add', async (_e, filePath, tagNames) => {
-  if (!workspacePath) return { success: false, error: 'No workspace open' };
-  if (typeof filePath !== 'string' || !filePath) return { success: false, error: 'filePath is required' };
-  if (!isInsideWorkspace(filePath)) return { success: false, error: 'Path is outside the workspace' };
-  if (!Array.isArray(tagNames) || tagNames.length === 0) return { success: false, error: 'tagNames must be a non-empty array' };
-  const invalid = tagNames.filter(t => !isValidTagName(t));
-  if (invalid.length > 0) return { success: false, error: `Invalid tag names: ${invalid.join(', ')}` };
-  try {
-    await fs.promises.access(filePath);
-  } catch {
-    return { success: false, error: 'File not found' };
-  }
-  return _withFileLock(filePath, async () => {
-    try {
-      const current = await parseTagsFromFile(filePath);
-      const lowerExisting = new Set(current.map(t => t.toLowerCase()));
-      const toAdd = tagNames.filter(t => !lowerExisting.has(t.toLowerCase()));
-      if (toAdd.length > 0) {
-        await writeTagsToFile(filePath, [...current, ...toAdd]);
-        await tagsIndex.refreshFile(filePath);
-      }
-      return { success: true };
-    } catch (err) {
-      return { success: false, error: err.message };
-    }
-  });
-});
-
-ipcMain.handle('tags:remove', async (_e, filePath, tagNames) => {
-  if (!workspacePath) return { success: false, error: 'No workspace open' };
-  if (typeof filePath !== 'string' || !filePath) return { success: false, error: 'filePath is required' };
-  if (!isInsideWorkspace(filePath)) return { success: false, error: 'Path is outside the workspace' };
-  if (!Array.isArray(tagNames) || tagNames.length === 0) return { success: false, error: 'tagNames must be a non-empty array' };
-  const invalid = tagNames.filter(t => !isValidTagName(t));
-  if (invalid.length > 0) return { success: false, error: `Invalid tag names: ${invalid.join(', ')}` };
-  try {
-    await fs.promises.access(filePath);
-  } catch {
-    return { success: false, error: 'File not found' };
-  }
-  return _withFileLock(filePath, async () => {
-    try {
-      const current = await parseTagsFromFile(filePath);
-      const lowerRemove = new Set(tagNames.map(t => t.toLowerCase()));
-      const remaining = current.filter(t => !lowerRemove.has(t.toLowerCase()));
-      if (remaining.length !== current.length) {
-        await writeTagsToFile(filePath, remaining);
-        await tagsIndex.refreshFile(filePath);
-      }
-      return { success: true };
-    } catch (err) {
-      return { success: false, error: err.message };
-    }
-  });
-});
-
-ipcMain.handle('tags:all-file-tags', () => {
-  return tagsIndex.getAllFileTags();
-});
-
-// --- Backlinks IPC API (feature 126) ---
-
-ipcMain.handle('backlinks:get', (_e, relFilePath) => {
-  if (!workspacePath) return [];
-  if (typeof relFilePath !== 'string' || !relFilePath) return [];
-  const absPath = path.isAbsolute(relFilePath)
-    ? relFilePath
-    : path.join(workspacePath, relFilePath);
-  const absPaths = backlinksIndex.getBacklinks(absPath);
-  // Return absolute paths — same format as tab.filePath in renderer
-  return absPaths;
-});
-
-// --- Graph View helpers (feature 127) ---
-
-function _extractNoteTitle(content, fileName) {
-  let m = content.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
-  if (m) {
-    const t = m[1].replace(/<[^>]+>/g, '').trim();
-    if (t) return t;
-  }
-  m = content.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
-  if (m) {
-    const t = m[1].replace(/<[^>]+>/g, '').trim();
-    if (t) return t;
-  }
-  return fileName.replace(/\.html$/i, '');
-}
-
-ipcMain.handle('graph:getData', async () => {
-  if (!workspacePath) return { nodes: [], edges: [] };
-
-  // 1. Get forward-link map from already-built backlinks index
-  const sourceToTargets = backlinksIndex.getSourceToTargets();
-
-  // 2. Enumerate all .html files in workspace
-  const allFiles = builder.collectFiles(workspacePath);
-  const htmlFiles = allFiles.filter(f => f.ext === '.html');
-
-  // Build a set of all known absolute paths for fast membership lookup
-  const knownAbsPaths = new Set(htmlFiles.map(f => f.fullPath));
-
-  // 3. Build node list: one per .html file (including orphans)
-  const nodes = [];
-  for (const { fullPath } of htmlFiles) {
-    const name = path.basename(fullPath);
-    const relPath = path.relative(workspacePath, fullPath);
-    let title = name.replace(/\.html$/i, '');
-    try {
-      const content = await fs.promises.readFile(fullPath, 'utf8');
-      title = _extractNoteTitle(content, name);
-    } catch { /* unreadable — use filename fallback */ }
-    nodes.push({ id: relPath, title, path: relPath });
-  }
-
-  // 4. Build edge list from forward-link map
-  const edges = [];
-  const edgeSet = new Set(); // deduplicate
-  for (const [absSource, targets] of sourceToTargets) {
-    if (!knownAbsPaths.has(absSource)) continue; // source outside workspace
-    const relSource = path.relative(workspacePath, absSource);
-    for (const absTarget of targets) {
-      if (!knownAbsPaths.has(absTarget)) continue; // target outside workspace
-      const relTarget = path.relative(workspacePath, absTarget);
-      if (relSource === relTarget) continue; // skip self-links
-      const key = `${relSource}→${relTarget}`;
-      if (edgeSet.has(key)) continue; // skip duplicates
-      edgeSet.add(key);
-      edges.push({ source: relSource, target: relTarget });
-    }
-  }
-
-  return { nodes, edges };
-});
+// BACKLINKS/GRAPH DISABLED — Backlinks IPC API (feature 126)
+//
+// ipcMain.handle('backlinks:get', (_e, relFilePath) => {
+//   if (!workspacePath) return [];
+//   if (typeof relFilePath !== 'string' || !relFilePath) return [];
+//   const absPath = path.isAbsolute(relFilePath)
+//     ? relFilePath
+//     : path.join(workspacePath, relFilePath);
+//   const absPaths = backlinksIndex.getBacklinks(absPath);
+//   return absPaths;
+// });
+//
+// // --- Graph View helpers (feature 127) ---
+//
+// function _extractNoteTitle(content, fileName) {
+//   let m = content.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+//   if (m) {
+//     const t = m[1].replace(/<[^>]+>/g, '').trim();
+//     if (t) return t;
+//   }
+//   m = content.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
+//   if (m) {
+//     const t = m[1].replace(/<[^>]+>/g, '').trim();
+//     if (t) return t;
+//   }
+//   return fileName.replace(/\.html$/i, '');
+// }
+//
+// ipcMain.handle('graph:getData', async () => {
+//   if (!workspacePath) return { nodes: [], edges: [] };
+//
+//   const sourceToTargets = backlinksIndex.getSourceToTargets();
+//
+//   const allFiles = builder.collectFiles(workspacePath);
+//   const htmlFiles = allFiles.filter(f => f.ext === '.html');
+//
+//   const knownAbsPaths = new Set(htmlFiles.map(f => f.fullPath));
+//
+//   const nodes = [];
+//   for (const { fullPath } of htmlFiles) {
+//     const name = path.basename(fullPath);
+//     const relPath = path.relative(workspacePath, fullPath);
+//     let title = name.replace(/\.html$/i, '');
+//     try {
+//       const content = await fs.promises.readFile(fullPath, 'utf8');
+//       title = _extractNoteTitle(content, name);
+//     } catch { /* unreadable — use filename fallback */ }
+//     nodes.push({ id: relPath, title, path: relPath });
+//   }
+//
+//   const edges = [];
+//   const edgeSet = new Set();
+//   for (const [absSource, targets] of sourceToTargets) {
+//     if (!knownAbsPaths.has(absSource)) continue;
+//     const relSource = path.relative(workspacePath, absSource);
+//     for (const absTarget of targets) {
+//       if (!knownAbsPaths.has(absTarget)) continue;
+//       const relTarget = path.relative(workspacePath, absTarget);
+//       if (relSource === relTarget) continue;
+//       const key = `${relSource}→${relTarget}`;
+//       const key = `${relSource}→${relTarget}`;
+//       if (edgeSet.has(key)) continue;
+//       edgeSet.add(key);
+//       edges.push({ source: relSource, target: relTarget });
+//     }
+//   }
+//
+//   return { nodes, edges };
+// });
 
 // --- Favorites IPC API (feature 119) ---
 

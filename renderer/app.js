@@ -9604,8 +9604,9 @@ window.api.onWorkspaceLoaded(async (data) => {
 
   // Restore sidebar collapse/expand state now that currentWorkspacePath is set
   _notesLoadState();
-  _tagsLoadState();
-  refreshTagsList();
+  // TAGS DISABLED
+  // _tagsLoadState();
+  // refreshTagsList();
   _storageLoadState();
   if (_rightPanelVisible && _rightPanelActiveTab === 'storage') renderStorageSection();
   if (_rightPanelVisible && _rightPanelActiveTab === 'memory') renderMemoryPanel();
@@ -9710,29 +9711,28 @@ window.api.onTemplatesUpdated(() => {
   updateUseTemplateVisibility();
 });
 
-// ─── Search index progress indicator (feature 80) ────────────────────────────
-
-(function () {
-  const progressEl = document.getElementById('index-progress');
-  const progressText = document.getElementById('index-progress-text');
-
-  window.api.onSearchIndexProgress(({ current, total }) => {
-    progressEl.classList.remove('hidden');
-    progressText.textContent = `Indexing notes… ${current}/${total}`;
-  });
-
-  window.api.onSearchIndexComplete(() => {
-    progressEl.classList.add('hidden');
-    // Auto-retry content search if there's a pending query (was blocked by "not ready")
-    if (searchInputEl && searchInputEl.value.trim()) {
-      performContentSearch(searchInputEl.value.trim());
-    }
-  });
-
-  window.api.onSearchIndexError(() => {
-    progressEl.classList.add('hidden');
-  });
-})();
+// SEARCH DISABLED — Search index progress indicator (feature 80)
+//
+// (function () {
+//   const progressEl = document.getElementById('index-progress');
+//   const progressText = document.getElementById('index-progress-text');
+//
+//   window.api.onSearchIndexProgress(({ current, total }) => {
+//     progressEl.classList.remove('hidden');
+//     progressText.textContent = `Indexing notes… ${current}/${total}`;
+//   });
+//
+//   window.api.onSearchIndexComplete(() => {
+//     progressEl.classList.add('hidden');
+//     if (searchInputEl && searchInputEl.value.trim()) {
+//       performContentSearch(searchInputEl.value.trim());
+//     }
+//   });
+//
+//   window.api.onSearchIndexError(() => {
+//     progressEl.classList.add('hidden');
+//   });
+// })();
 
 SyncSettingsModal.init();
 UnifiedSyncIndicator.init();
@@ -12154,11 +12154,11 @@ document.addEventListener('keydown', (e) => {
   if (tag === 'INPUT' || tag === 'TEXTAREA') return;
   if (e.isComposing) return;
 
-  // Escape — close graph modal if open
-  if (e.key === 'Escape' && !document.getElementById('graph-modal')?.classList.contains('hidden')) {
-    closeGraphView();
-    return;
-  }
+  // GRAPH DISABLED — Escape to close graph modal
+  // if (e.key === 'Escape' && !document.getElementById('graph-modal')?.classList.contains('hidden')) {
+  //   closeGraphView();
+  //   return;
+  // }
 
   // Cmd/Ctrl+Shift+O — toggle outline panel
   if ((e.metaKey || e.ctrlKey) && e.shiftKey && !e.altKey && e.key === 'O') {
@@ -14321,7 +14321,7 @@ const tagFilterClearEl = document.getElementById('tag-filter-clear');
 
 // Load persisted collapse state (per workspace)
 async function _tagsLoadState() {
-  if (!currentWorkspacePath) return;
+  if (!currentWorkspacePath || !tagsSectionEl) return;
   const state = await window.api.getSidebarState(currentWorkspacePath);
   const collapsed = state.tagsCollapsed === true;
   tagsSortMode = state.tagsSortMode || 'alpha';
@@ -14357,12 +14357,13 @@ function _updateTagsSortBtn() {
 }
 
 async function refreshTagsList() {
-  if (!window.api) return;
+  if (!window.api || !window.api.tagsList) return;
   allTags = await window.api.tagsList() || [];
   renderTagsList();
 }
 
 function renderTagsList() {
+  if (!tagsListEl) return;
   // Sort
   const sorted = [...allTags].sort((a, b) => {
     if (tagsSortMode === 'count') return b.count - a.count || a.tag.localeCompare(b.tag);
@@ -14537,6 +14538,9 @@ function _clearTagFilter() {
   _updateLogicToggleBtn();
 }
 
+// TAGS DISABLED guard — skip event listener setup when tags-section HTML is absent
+if (tagsSectionEl) {
+
 // Header click — toggle collapse
 tagsSectionHeaderEl.addEventListener('click', (e) => {
   // Don't collapse when clicking the sort or logic button inside the header
@@ -14565,6 +14569,8 @@ tagsSortBtnEl.addEventListener('click', (e) => {
 
 // Tag filter clear button
 tagFilterClearEl.addEventListener('click', () => _clearTagFilter());
+
+} // end tagsSectionEl guard
 const tagsLogicToggleEl = document.getElementById('tags-logic-toggle');
 if (tagsLogicToggleEl) tagsLogicToggleEl.addEventListener('click', (e) => {
   e.stopPropagation();
@@ -14572,23 +14578,21 @@ if (tagsLogicToggleEl) tagsLogicToggleEl.addEventListener('click', (e) => {
   if (seg) _onLogicToggle(seg.dataset.logic);
 });
 
-// Wire up events
-window.api.onTagsChanged(async () => {
-  await refreshTagsList();
-  // If any selected tags are still valid, recompute the active filter
-  if (activeTagFilters.size > 0) {
-    // Remove from selection any tags that no longer exist
-    const existing = new Set(allTags.map(t => t.tag));
-    for (const t of [...activeTagFilters]) {
-      if (!existing.has(t)) activeTagFilters.delete(t);
-    }
-    await _computeTagFilterPaths();
-    _updateFilterBar();
-    renderFilteredTree();
-    renderTagsList();
-    _updateLogicToggleBtn();
-  }
-});
+// TAGS DISABLED — Wire up events
+// window.api.onTagsChanged(async () => {
+//   await refreshTagsList();
+//   if (activeTagFilters.size > 0) {
+//     const existing = new Set(allTags.map(t => t.tag));
+//     for (const t of [...activeTagFilters]) {
+//       if (!existing.has(t)) activeTagFilters.delete(t);
+//     }
+//     await _computeTagFilterPaths();
+//     _updateFilterBar();
+//     renderFilteredTree();
+//     renderTagsList();
+//     _updateLogicToggleBtn();
+//   }
+// });
 
 // ── End tags sidebar panel ─────────────────────────────────────────────────────
 
@@ -14972,50 +14976,59 @@ window.api.onWorkspaceLoaded(() => {
   }, 0);
 });
 
-// Feature 99: update file pills on tag changes
-window.api.onTagsChanged((changes) => {
-  if (!changes) {
-    // Null payload = build-complete or bulk change: full cache reload
-    loadFileTagsCache().then(() => {
-      document.querySelectorAll('li.tree-file').forEach(li => {
-        updatePillsForFile(li.dataset.path);
-      });
-    });
-  } else {
-    // Incremental update: only touch the changed files
-    for (const { filePath, newTags } of changes) {
-      if (newTags && newTags.length > 0) {
-        fileTagsCache.set(filePath, newTags);
-      } else {
-        fileTagsCache.delete(filePath);
-      }
-      updatePillsForFile(filePath);
-    }
-  }
-});
+// TAGS DISABLED — update file pills on tag changes
+// window.api.onTagsChanged((changes) => {
+//   if (!changes) {
+//     loadFileTagsCache().then(() => {
+//       document.querySelectorAll('li.tree-file').forEach(li => {
+//         updatePillsForFile(li.dataset.path);
+//       });
+//     });
+//   } else {
+//     for (const { filePath, newTags } of changes) {
+//       if (newTags && newTags.length > 0) {
+//         fileTagsCache.set(filePath, newTags);
+//       } else {
+//         fileTagsCache.delete(filePath);
+//       }
+//       updatePillsForFile(filePath);
+//     }
+//   }
+// });
 
-// Graph view (feature 127)
-window.api.onGraphOpen(() => openGraphView());
+// TAGS DISABLED — Feature 99: load file tags cache on workspace open and update pills
+// window.api.onWorkspaceLoaded(() => {
+//   setTimeout(() => {
+//     loadFileTagsCache().then(() => {
+//       document.querySelectorAll('li.tree-file').forEach(li => {
+//         updatePillsForFile(li.dataset.path);
+//       });
+//     });
+//   }, 0);
+// });
 
-const graphModal = document.getElementById('graph-modal');
-const graphCloseBtn = document.getElementById('graph-close-btn');
-if (graphCloseBtn) graphCloseBtn.addEventListener('click', closeGraphView);
-if (graphModal) {
-  graphModal.querySelector('.modal-backdrop')?.addEventListener('click', closeGraphView);
-}
+// GRAPH DISABLED — graph view open listener
+// window.api.onGraphOpen(() => openGraphView());
+//
+// const graphModal = document.getElementById('graph-modal');
+// const graphCloseBtn = document.getElementById('graph-close-btn');
+// if (graphCloseBtn) graphCloseBtn.addEventListener('click', closeGraphView);
+// if (graphModal) {
+//   graphModal.querySelector('.modal-backdrop')?.addEventListener('click', closeGraphView);
+// }
 
-// Backlinks section refresh (feature 126)
-window.api.onBacklinksChanged((affectedRelPaths) => {
-  if (!_rightPanelVisible || _rightPanelActiveTab !== 'outline') return;
-  const state = TabState.getState();
-  const panel = TabState.getPanel(state.focusedPanelId);
-  const tab = panel ? TabState.getActiveTab(state.focusedPanelId) : null;
-  if (!tab || !tab.filePath) return;
-  if (affectedRelPaths.includes(tab.filePath)) {
-    _backlinksCache.delete(tab.filePath); // invalidate cached result
-    renderBacklinksSection();
-  }
-});
+// BACKLINKS DISABLED — backlinks section refresh (feature 126)
+// window.api.onBacklinksChanged((affectedRelPaths) => {
+//   if (!_rightPanelVisible || _rightPanelActiveTab !== 'outline') return;
+//   const state = TabState.getState();
+//   const panel = TabState.getPanel(state.focusedPanelId);
+//   const tab = panel ? TabState.getActiveTab(state.focusedPanelId) : null;
+//   if (!tab || !tab.filePath) return;
+//   if (affectedRelPaths.includes(tab.filePath)) {
+//     _backlinksCache.delete(tab.filePath); // invalidate cached result
+//     renderBacklinksSection();
+//   }
+// });
 
 // --- Bulk Export (feature 106) ---
 

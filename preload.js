@@ -179,11 +179,12 @@ contextBridge.exposeInMainWorld("api", {
     ipcRenderer.on('sync:openSetup', () => cb());
   },
 
-  // Search index progress events (feature 80)
-  onSearchIndexProgress: (cb) => ipcRenderer.on('search:indexProgress', (_e, data) => cb(data)),
-  onSearchIndexComplete: (cb) => ipcRenderer.on('search:indexComplete', (_e, data) => cb(data)),
-  onSearchIndexError: (cb) => ipcRenderer.on('search:indexError', (_e, data) => cb(data)),
-  onTagsChanged: (cb) => ipcRenderer.on('tags:changed', (_event, changes) => cb(changes)),
+  // SEARCH DISABLED — Search index progress events (feature 80)
+  // onSearchIndexProgress: (cb) => ipcRenderer.on('search:indexProgress', (_e, data) => cb(data)),
+  // onSearchIndexComplete: (cb) => ipcRenderer.on('search:indexComplete', (_e, data) => cb(data)),
+  // onSearchIndexError: (cb) => ipcRenderer.on('search:indexError', (_e, data) => cb(data)),
+  // TAGS DISABLED — onTagsChanged (feature 98)
+  // onTagsChanged: (cb) => ipcRenderer.on('tags:changed', (_event, changes) => cb(changes)),
   // Model list refreshed after remote fetch
   onModelsRefreshed: (cb) => ipcRenderer.on('models:refreshed', () => cb()),
   onScriptsRunChanged: (cb) => ipcRenderer.on('scripts:runChanged', () => cb()),
@@ -202,15 +203,15 @@ contextBridge.exposeInMainWorld("api", {
   // Preferences (feature 114)
   preferencesGetAuthor: () => ipcRenderer.invoke('preferences:getAuthor'),
 
-  // Search query (feature 82)
-  searchQuery: (query) => ipcRenderer.invoke('search:query', query),
+  // SEARCH DISABLED — Search query (feature 82)
+  // searchQuery: (query) => ipcRenderer.invoke('search:query', query),
 
-  // Tags (feature 90)
-  tagsList: () => ipcRenderer.invoke('tags:list'),
-  tagsFiles: (tag) => ipcRenderer.invoke('tags:files', tag),
-  tagsAdd: (filePath, tagNames) => ipcRenderer.invoke('tags:add', filePath, tagNames),
-  tagsRemove: (filePath, tagNames) => ipcRenderer.invoke('tags:remove', filePath, tagNames),
-  tagsAllFileTags: () => ipcRenderer.invoke('tags:all-file-tags'),
+  // TAGS DISABLED — Tags (feature 90)
+  // tagsList: () => ipcRenderer.invoke('tags:list'),
+  // tagsFiles: (tag) => ipcRenderer.invoke('tags:files', tag),
+  // tagsAdd: (filePath, tagNames) => ipcRenderer.invoke('tags:add', filePath, tagNames),
+  // tagsRemove: (filePath, tagNames) => ipcRenderer.invoke('tags:remove', filePath, tagNames),
+  // tagsAllFileTags: () => ipcRenderer.invoke('tags:all-file-tags'),
 
   // Export (feature 102)
   exportNote: (filePath, format, options) => ipcRenderer.invoke('export:note', filePath, format, options),
@@ -277,13 +278,13 @@ contextBridge.exposeInMainWorld("api", {
   // Internal link navigation — open external URLs in system browser (feature 125)
   openExternal: (url) => ipcRenderer.invoke('shell:openExternal', url),
 
-  // Backlinks (feature 126)
-  getBacklinks: (filePath) => ipcRenderer.invoke('backlinks:get', filePath),
-  onBacklinksChanged: (cb) => ipcRenderer.on('backlinks:changed', (_event, relPaths) => cb(relPaths)),
-
-  // Graph view (feature 127)
-  getGraphData: () => ipcRenderer.invoke('graph:getData'),
-  onGraphOpen: (cb) => ipcRenderer.on('graph:open', () => cb()),
+  // BACKLINKS/GRAPH DISABLED
+  // getBacklinks: (filePath) => ipcRenderer.invoke('backlinks:get', filePath),
+  // onBacklinksChanged: (cb) => ipcRenderer.on('backlinks:changed', (_event, relPaths) => cb(relPaths)),
+  //
+  // // Graph view (feature 127)
+  // getGraphData: () => ipcRenderer.invoke('graph:getData'),
+  // onGraphOpen: (cb) => ipcRenderer.on('graph:open', () => cb()),
 
   // Unset API keys preference (feature 145)
   getUnsetApiKeys: () => ipcRenderer.invoke('preferences:getUnsetApiKeys'),
