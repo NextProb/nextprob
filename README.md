@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="assets/logo.png" alt="ToutKit logo" height="80">
+  <img src="assets/logo.png" alt="NextProb logo" height="80">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/logo-fullname-dark.png">
-    <img src="assets/logo-fullname.png" alt="ToutKit" height="80">
+    <img src="assets/logo-fullname.png" alt="NextProb" height="80">
   </picture>
 </p>
 
@@ -23,15 +23,15 @@
 - **Walls of text from AI.** → Answers come back as **interactive pages**.
 
 <p align="center">
-  <img src="screenshots/how-it-works.gif" alt="ToutKit interface — sidebar of notes, embedded webview, and terminal" width="800">
+  <img src="screenshots/how-it-works.gif" alt="NextProb interface — sidebar of notes, embedded webview, and terminal" width="800">
 </p>
 
-ToutKit is a desktop app that pairs a sidebar of notes with a built-in terminal for AI CLIs (Claude, Codex, Gemini) and an in-app browser that renders whatever the AI writes.
+NextProb is a desktop app that pairs a sidebar of notes with a built-in terminal for AI CLIs (Claude, Codex, Gemini) and an in-app browser that renders whatever the AI writes.
 Each note is a self-contained folder with its own SQLite database, key/value store, attached files, and scripts — so a note can grow from a static page into a sortable table, an interactive dashboard, or a research tool, without leaving your filesystem.
-Everything stays on your disk; nothing syncs to a ToutKit-run server unless you opt in.
+Everything stays on your disk; nothing syncs to a NextProb-run server unless you opt in.
 
 <p align="center">
-  <a href="https://github.com/toutkit/toutkit/releases/latest"><strong>Download</strong></a> ·
+  <a href="https://github.com/nextprob/nextprob/releases/latest"><strong>Download</strong></a> ·
   <a href="#install">Install from source</a> ·
   <a href="#see-it-work">See it work</a> ·
   <a href="https://youtu.be/ZjUs5zavs3E">Watch the demo</a>
@@ -43,22 +43,22 @@ Everything stays on your disk; nothing syncs to a ToutKit-run server unless you 
 
 > "For answers, I often have it generate dynamic htmls (with js) that allows me to sort/filter data and to tinker with visualizations interactively." — [Lex Fridman](https://x.com/lexfridman/status/2039841897066414291), replying to Andrej Karpathy's "LLM Knowledge Bases" post on X, April 2026.
 
-I'm Stephen Z, founder of ToutKit and a vibe-coder. I've built many small projects since 2024: some are tools that help me handle PDFs, text, audio, and video; some are products for users; and some are actually a note-taking process in VS Code with Agent as the writer. Before that, I was a business analyst at an internet company.
+I'm Stephen Z, founder of NextProb and a vibe-coder. I've built many small projects since 2024: some are tools that help me handle PDFs, text, audio, and video; some are products for users; and some are actually a note-taking process in VS Code with Agent as the writer. Before that, I was a business analyst at an internet company.
 
 **An idea from someone who likes to take notes.**
 I like taking notes — for big or small decisions, or any kind of planning. I also like Obsidian very much. But I have been thinking about a more native way to write in this Agent era. Is it still a cursor and text running from left to right, top to bottom?
 
 **AI handles writing today, but it still lacks a "Canvas" — and you need a GUI.**
-Today, AI already handles the writing instead of the human. However, for the frontend, it's still the same window and the same layout, which I thought might need an upgrade. Considering AI's proficiency at writing not only markdown but also code, why don't we ask AI to take notes directly in the format of a website, or even an application? That's what ToutKit would like to do: give you a GUI and, at the same time, give AI a "Canvas" instead of fixed lines. With that GUI/"Canvas", you can interact with AI more freely, and AI can give you feedback in a much richer and more dynamic way. Whether you're asking AI to do research in some field, or to make a plan for something, you'll get a website or application back, instead of lines of text to scan over and over.
+Today, AI already handles the writing instead of the human. However, for the frontend, it's still the same window and the same layout, which I thought might need an upgrade. Considering AI's proficiency at writing not only markdown but also code, why don't we ask AI to take notes directly in the format of a website, or even an application? That's what NextProb would like to do: give you a GUI and, at the same time, give AI a "Canvas" instead of fixed lines. With that GUI/"Canvas", you can interact with AI more freely, and AI can give you feedback in a much richer and more dynamic way. Whether you're asking AI to do research in some field, or to make a plan for something, you'll get a website or application back, instead of lines of text to scan over and over.
 
 [Learn more about this idea on YouTube](https://youtu.be/ZjUs5zavs3E).
 
-## What is ToutKit
+## What is NextProb
 
 **"Chrome + VS Code"**
 - **A terminal inside**: Just use Claude Code/Codex/Gemini CLI directly, like what you do in VS Code
 - **A note management sidebar**: Just like any note application, arrange notes in hierarchy. The difference is that each note is actually a project folder behind on your system (while we don't need to think about that since that's handled by AI only).
-- **The GUI - "Browser"**: ToutKit has a "browser" in the app. So with one-click, any website can be displayed directly in it.
+- **The GUI - "Browser"**: NextProb has a "browser" in the app. So with one-click, any website can be displayed directly in it.
 - **Also, a "backend"**: website in the app can have attached scripts to run. So your notes are no longer static, but can be dynamic, and merged into your workflow.
 - **A special local storage structure**: Every note is a self-contained folder with its own SQLite database, key/value store, attachments, and scripts. Move the folder and the whole note — data, code, and all — moves with it.
 
@@ -73,15 +73,15 @@ The easiest way is to grab a pre-built release. Building from source is for peop
 
 ### Download the app
 
-[**Download the latest release →**](https://github.com/toutkit/toutkit/releases/latest)
+[**Download the latest release →**](https://github.com/nextprob/nextprob/releases/latest)
 
 ### Run from source
 
 If you'd rather clone and run, you'll need [Node.js](https://nodejs.org/) v18+ and npm:
 
 ```bash
-git clone https://github.com/toutkit/toutkit.git
-cd toutkit
+git clone https://github.com/nextprob/nextprob.git
+cd nextprob
 npm ci
 cp auth-config.example.json auth-config.json
 npm start
@@ -103,7 +103,7 @@ A quick walk-through of the everyday loop:
 
 ## How "backend" works?
 
-In a normal web app, your frontend calls an API, the API runs some code on a server, that code reads or writes a database, and the frontend reads the updated data back. ToutKit does the same thing — except the "server" is a script sitting next to your note, and the "database" is the `storage/` folder right next to it.
+In a normal web app, your frontend calls an API, the API runs some code on a server, that code reads or writes a database, and the frontend reads the updated data back. NextProb does the same thing — except the "server" is a script sitting next to your note, and the "database" is the `storage/` folder right next to it.
 
 **The flow.** The page calls `window.noteScripts.run('fetch_data.py', [...])`. The script starts as a real subprocess (Python / Bash / Node / Ruby), with its working directory set to the note's `scripts/` folder and two environment variables injected: `NOTE_ID` (which note this is) and `WORKSPACE_PATH` (where the workspace lives on disk). From those two it can find everything else. stdout/stderr streams back to the page in real time and is also appended to `scripts/logs/{name}.log`. When the script exits, the page reads the updated storage via `noteDB` / `noteSQL` / `noteFiles` and re-renders. That's the full loop — the same shape as a click handler calling an endpoint that mutates a DB, except the "endpoint" is `scripts/fetch_data.py`, the "DB" is `storage/db.sqlite`, and nothing ever leaves your machine.
 
@@ -117,7 +117,7 @@ So a Python script can `pip install requests`, hit an API, parse the JSON, and `
 
 **Safety rails.** Scripts are **off by default** — every script has to be explicitly approved from the UI before it can run, and approvals are stored per-note in `.notes-app/script-whitelist.json`. A note can only execute files inside its own `scripts/` folder (path traversal attempts are rejected at the IPC layer), and it can only pass string arguments, capped in count and size. If you want to stop a long-running script, `noteScripts.stopByName('fetch_data.py')` from the page kills it.
 
-**Per-note Python environments.** Drop a `.venv/` inside a note's `scripts/` folder (or at the note root) and ToutKit auto-detects it — Python scripts for that note run through that interpreter, with `PATH` and `VIRTUAL_ENV` set correctly. Each note can pin its own dependencies without leaking them into your system Python.
+**Per-note Python environments.** Drop a `.venv/` inside a note's `scripts/` folder (or at the note root) and NextProb auto-detects it — Python scripts for that note run through that interpreter, with `PATH` and `VIRTUAL_ENV` set correctly. Each note can pin its own dependencies without leaking them into your system Python.
 
 **Why this matters.** Because the script and the page share `storage/`, you can build a real tiny app inside a single note: an HTML dashboard backed by scripts that fetch, transform, and save data into SQLite. No server to deploy, no auth to wire up, no API to version. The "cloud" is just a subdirectory, and the "backend" is whatever language you like.
 
@@ -166,7 +166,7 @@ Together these cover the full range: tiny state in `noteDB`, structured/queryabl
 
 ## Features
 
-**Terminal — where you talk to AI.** ToutKit has a built-in terminal that sits right underneath the main window. It's where you chat with Claude, Codex, or Gemini and ask them to do things: write a note, pull some data, summarize a PDF, build a little tool. If you've seen a black window with text in it before, this is the same thing — and if you haven't, don't worry: once you start one of the AI tools, you just type what you want in plain English.
+**Terminal — where you talk to AI.** NextProb has a built-in terminal that sits right underneath the main window. It's where you chat with Claude, Codex, or Gemini and ask them to do things: write a note, pull some data, summarize a PDF, build a little tool. If you've seen a black window with text in it before, this is the same thing — and if you haven't, don't worry: once you start one of the AI tools, you just type what you want in plain English.
 
 You can open several terminal tabs at once, so one can be Claude writing a note while another is Codex working on something else. Each tab shows a small glowing dot when the AI is thinking, so you always know which one is waiting for you. You can also drag the terminal out into its own window if you'd like more room.
 
@@ -174,30 +174,30 @@ You can open several terminal tabs at once, so one can be Claude writing a note 
 
 Every note is a real folder on your computer — nothing is locked inside the app. That means you can also move notes around in Finder, back them up to iCloud or Dropbox, or zip a note up and email it to a friend. The app picks up whatever you do on disk automatically.
 
-**Backend Scripts — give your notes superpowers.** A normal note is just a page you read. In ToutKit, a note can also *do things*: fetch the latest weather, pull your bank transactions, summarize a PDF you just dropped in, regenerate a chart from fresh data. It does this by running little helper scripts that live next to the note — written by the AI for you, in Python or a similar language. You don't need to know how they work; you just click a button on the note and something happens.
+**Backend Scripts — give your notes superpowers.** A normal note is just a page you read. In NextProb, a note can also *do things*: fetch the latest weather, pull your bank transactions, summarize a PDF you just dropped in, regenerate a chart from fresh data. It does this by running little helper scripts that live next to the note — written by the AI for you, in Python or a similar language. You don't need to know how they work; you just click a button on the note and something happens.
 
-Safety first: no script ever runs without your permission. The first time a note wants to run something, ToutKit asks you to approve it, and you can revoke that approval any time. Approvals are remembered per note, so you only get asked once per script.
+Safety first: no script ever runs without your permission. The first time a note wants to run something, NextProb asks you to approve it, and you can revoke that approval any time. Approvals are remembered per note, so you only get asked once per script.
 
-**Local databases — notes that remember things.** Regular notes forget everything between visits. ToutKit notes can store structured information right inside themselves: a running list of books you've read with ratings, a log of workouts, a table of contacts, a price history of something you're tracking. The data lives in a small private database attached to the note, so the note can show you a sortable, filterable table instead of a static list.
+**Local databases — notes that remember things.** Regular notes forget everything between visits. NextProb notes can store structured information right inside themselves: a running list of books you've read with ratings, a log of workouts, a table of contacts, a price history of something you're tracking. The data lives in a small private database attached to the note, so the note can show you a sortable, filterable table instead of a static list.
 
 All of this is stored inside the note's own folder. If you move or copy the note, the data moves with it. There's no separate "library" file to worry about and nothing syncs to a company server you don't control.
 
-**Website memory storage — fill in forms without losing them.** If a note has a form — a text box, a checklist, a dropdown, a draft area — whatever you type is remembered automatically. Close the note, come back a week later, and everything you'd filled in is still there. This is what makes a ToutKit note feel like a real tool instead of a static page: a weekly review template keeps last week's answers, a packing list remembers what you checked off, a journal keeps your draft safe even if the app crashes.
+**Website memory storage — fill in forms without losing them.** If a note has a form — a text box, a checklist, a dropdown, a draft area — whatever you type is remembered automatically. Close the note, come back a week later, and everything you'd filled in is still there. This is what makes a NextProb note feel like a real tool instead of a static page: a weekly review template keeps last week's answers, a packing list remembers what you checked off, a journal keeps your draft safe even if the app crashes.
 
 You don't configure anything for this to work — it just happens. If you ever want to start fresh, there's a reset option in the note's menu.
 
-**Sharing — publish a note from your own GitHub (optional).** When you want to send a note to someone else, ToutKit publishes it through *your* GitHub account, not a ToutKit server. The first time you share, you connect GitHub once (device-code login, no password typed into the app) and pick a name for a small repo on your account — `toutkit-shares` by default. ToutKit creates that repo, drops in a tiny renderer page, and turns on GitHub Pages for it. After that, each time you share a note, the note's HTML is saved as a **gist** on your account (public or secret, your choice) and the share link points at your Pages site, which loads the gist and shows the note. Nothing about the note ever touches a ToutKit-run server — the gist lives in your GitHub, the renderer lives in your repo, and the link is `https://<your-username>.github.io/<your-repo>/?id=…`. Disconnecting GitHub later doesn't break the links you've already shared.
+**Sharing — publish a note from your own GitHub (optional).** When you want to send a note to someone else, NextProb publishes it through *your* GitHub account, not a NextProb server. The first time you share, you connect GitHub once (device-code login, no password typed into the app) and pick a name for a small repo on your account — `my-shared-notes` by default. NextProb creates that repo, drops in a tiny renderer page, and turns on GitHub Pages for it. After that, each time you share a note, the note's HTML is saved as a **gist** on your account (public or secret, your choice) and the share link points at your Pages site, which loads the gist and shows the note. Nothing about the note ever touches a NextProb-run server — the gist lives in your GitHub, the renderer lives in your repo, and the link is `https://<your-username>.github.io/<your-repo>/?id=…`. Disconnecting GitHub later doesn't break the links you've already shared.
 
-**Sync — your notes, everywhere (optional).** If you'd like your notes on more than one computer, you can turn on sync and ToutKit will keep everything mirrored in the background: text, form data, attached files, the whole thing. It works the way you'd expect — edit something on your laptop, open your desktop, and the change is already there. If you go offline, it waits patiently and catches up when you're back online. If two devices edit the same note at once, ToutKit tells you instead of silently picking a winner.
+**Sync — your notes, everywhere (optional).** If you'd like your notes on more than one computer, you can turn on sync and NextProb will keep everything mirrored in the background: text, form data, attached files, the whole thing. It works the way you'd expect — edit something on your laptop, open your desktop, and the change is already there. If you go offline, it waits patiently and catches up when you're back online. If two devices edit the same note at once, NextProb tells you instead of silently picking a winner.
 
 Sync is **off by default and completely optional**. If you never turn it on, your notes never leave your computer — no account, no cloud, no tracking.
 
 
 ## License
 
-ToutKit is licensed under the **GNU Affero General Public License version 3.0 (AGPL-3.0-only)**. See [`LICENSE`](LICENSE) for the full text.
+NextProb is licensed under the **GNU Affero General Public License version 3.0 (AGPL-3.0-only)**. See [`LICENSE`](LICENSE) for the full text.
 
-The "ToutKit" name and the "Helicase.space" brand (including typographic variants such as "Helicase Space" and "Helicase"), together with the icon files under `assets/` (`icon.icns`, `icon.png`), are **reserved marks and assets of Helicase Space LLC** and are **not** licensed under the AGPL. See [`NOTICE`](NOTICE) for details. If you fork or redistribute a build of this app, please use your own product name and icon rather than ToutKit's branding.
+The "NextProb" name and the "Helicase.space" brand (including typographic variants such as "Helicase Space" and "Helicase"), together with the icon files under `assets/` (`icon.icns`, `icon.png`), are **reserved marks and assets of Helicase Space LLC** and are **not** licensed under the AGPL. See [`NOTICE`](NOTICE) for details. If you fork or redistribute a build of this app, please use your own product name and icon rather than NextProb's branding.
 
 Third-party dependencies and their licenses are listed in [`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md).
 

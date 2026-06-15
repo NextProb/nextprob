@@ -1,6 +1,6 @@
-# Contributing to ToutKit
+# Contributing to NextProb
 
-Thanks for considering a contribution. ToutKit is an Electron app and a small
+Thanks for considering a contribution. NextProb is an Electron app and a small
 project — the bar to make a useful change is low.
 
 ## Before you start
@@ -20,7 +20,7 @@ Short version:
 
 ```bash
 git clone <this repo>
-cd toutkit
+cd nextprob
 npm ci
 cp auth-config.example.json auth-config.json
 npm start
@@ -41,7 +41,7 @@ files under `renderer/` and the root `*.js` files take effect on app restart.
 
 ## Reporting issues
 
-- **Bugs:** open a GitHub issue with reproduction steps, OS, and ToutKit version
+- **Bugs:** open a GitHub issue with reproduction steps, OS, and NextProb version
   (see Help → About in the app).
 - **Security:** please email **support@helicase.space** rather than filing a
   public issue.

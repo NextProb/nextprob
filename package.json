@@ -1,6 +1,6 @@
 {
-  "name": "toutkit",
-  "version": "0.2.0",
+  "name": "nextprob",
+  "version": "0.1.2",
   "main": "main.js",
   "license": "AGPL-3.0-only",
   "author": "Helicase Space LLC <contact@helicase.space>",
@@ -18,8 +18,8 @@
     "licenses:generate": "npx --yes --package=generate-license-file@4.1.1 generate-license-file --input package.json --output THIRD_PARTY_LICENSES.md --overwrite"
   },
   "build": {
-    "appId": "com.toutkit.app",
-    "productName": "ToutKit",
+    "appId": "com.nextprob.app",
+    "productName": "NextProb",
     "npmRebuild": false,
     "directories": {
       "output": "release/"
@@ -72,11 +72,11 @@
       "entitlements": "build/entitlements.mac.plist",
       "entitlementsInherit": "build/entitlements.mac.inherit.plist",
       "extendInfo": {
-        "NSMicrophoneUsageDescription": "ToutKit needs microphone access so notes can record audio.",
-        "NSCameraUsageDescription": "ToutKit needs camera access so notes can capture video."
+        "NSMicrophoneUsageDescription": "NextProb needs microphone access so notes can record audio.",
+        "NSCameraUsageDescription": "NextProb needs camera access so notes can capture video."
       },
       "gatekeeperAssess": false,
-      "artifactName": "ToutKit-${arch}.${ext}",
+      "artifactName": "NextProb-${arch}.${ext}",
       "target": [
         {
           "target": "dmg",

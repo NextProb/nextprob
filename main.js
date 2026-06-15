@@ -6,7 +6,7 @@ const fs = require("fs");
 
 // Use a separate userData folder (and Keychain item) for dev vs packaged builds
 if (!app.isPackaged) {
-  app.setName('toutkit-dev');
+  app.setName('nextprob-dev');
 }
 
 // Packaged binaries default to the prod stage; dev launches still default to 'dev'
@@ -18,10 +18,10 @@ if (app.isPackaged && !process.env.APP_STAGE) {
 // About-panel metadata — macOS renders this natively via the { role: 'about' }
 // menu item; Windows/Linux reach the same info through the Help menu below.
 app.setAboutPanelOptions({
-  applicationName: 'ToutKit',
+  applicationName: 'NextProb',
   applicationVersion: app.getVersion(),
   copyright: 'Copyright (c) 2026 Helicase Space LLC\nLicensed under AGPL-3.0-only. See LICENSE.',
-  website: 'https://toutkit.com',
+  website: 'https://nextprob.com',
   authors: ['Helicase Space LLC'],
 });
 const { execSync, execFileSync, execFile, spawn } = require("child_process");
@@ -200,17 +200,17 @@ if (!_gotSingleInstanceLock) {
   app.quit();
 }
 
-// ─── Register toutkit:// as the system deep link handler ──────────────────
+// ─── Register nextprob:// as the system deep link handler ──────────────────
 // Only in production (packaged). In dev mode, auth.js uses a loopback HTTP
 // server instead, because setAsDefaultProtocolClient doesn't work reliably
 // on macOS when the app isn't packaged.
 if (app.isPackaged) {
-  app.setAsDefaultProtocolClient('toutkit');
+  app.setAsDefaultProtocolClient('nextprob');
 
   // ─── macOS: handle deep link when app is already running ───────────────────
   app.on('open-url', (event, url) => {
     event.preventDefault();
-    if (url.startsWith('toutkit://auth/callback')) {
+    if (url.startsWith('nextprob://auth/callback')) {
       auth.handleCallback(url).then(() => {
         if (mainWindow) {
           if (mainWindow.isMinimized()) mainWindow.restore();
@@ -224,7 +224,7 @@ if (app.isPackaged) {
 // ─── Second-instance: focus existing window + handle deep link (prod) ───────
 app.on('second-instance', (_event, argv) => {
   const url = app.isPackaged
-    ? argv.find(arg => arg.startsWith('toutkit://auth/callback'))
+    ? argv.find(arg => arg.startsWith('nextprob://auth/callback'))
     : null;
   if (url) {
     auth.handleCallback(url).then(() => {
@@ -244,8 +244,8 @@ app.on('second-instance', (_event, argv) => {
 // Determine workspace path: env var, CLI arg, or saved preference
 function resolveWorkspacePath() {
   // Check env var first (used by tests)
-  if (process.env.TOUTKIT_WORKSPACE) {
-    return path.resolve(process.env.TOUTKIT_WORKSPACE);
+  if (process.env.NOTES_APP_WORKSPACE) {
+    return path.resolve(process.env.NOTES_APP_WORKSPACE);
   }
   // Check for command-line arg (npm start -- /path/to/workspace)
   const userArgs = process.argv.slice(2).filter((a) => !a.startsWith("--"));
@@ -605,7 +605,7 @@ function createWindow() {
       label: 'Help',
       role: 'help',
       submenu: [
-        { label: 'About ToutKit', role: 'about' },
+        { label: 'About NextProb', role: 'about' },
         { type: 'separator' },
         {
           label: 'Contact Support',
@@ -616,16 +616,16 @@ function createWindow() {
         { type: 'separator' },
         {
           // AGPL-3.0 §13: a network-facing application must make its source
-          // available to users. ToutKit's sync features trigger this clause.
+          // available to users. NextProb's sync features trigger this clause.
           label: 'View Source Code (AGPL-3.0)',
           click() {
-            shell.openExternal('https://github.com/toutkit/toutkit');
+            shell.openExternal('https://github.com/nextprob/nextprob');
           },
         },
         {
           label: 'Third-Party Licenses',
           click() {
-            shell.openExternal('https://github.com/toutkit/toutkit/blob/main/THIRD_PARTY_LICENSES.md');
+            shell.openExternal('https://github.com/nextprob/nextprob/blob/main/THIRD_PARTY_LICENSES.md');
           },
         },
       ],
@@ -902,10 +902,10 @@ app.whenReady().then(async () => {
   });
 
   // ─── Auth: handle cold-start deep link (Windows/Linux, production only) ─────
-  // If the packaged app was launched via toutkit:// URL, the callback URL is
+  // If the packaged app was launched via nextprob:// URL, the callback URL is
   // in process.argv. In dev mode, the loopback HTTP server handles callbacks.
   if (app.isPackaged) {
-    const _coldStartDeepLink = process.argv.find(arg => arg.startsWith('toutkit://auth/callback'));
+    const _coldStartDeepLink = process.argv.find(arg => arg.startsWith('nextprob://auth/callback'));
     if (_coldStartDeepLink) {
       auth.handleCallback(_coldStartDeepLink);
     }
@@ -2336,8 +2336,8 @@ ipcMain.handle('sync:initialCommitAndPush', async () => {
     }
 
     try {
-      await execFileAsync(bin, ['commit', '-m', 'Initial sync from toutkit'],
-        { cwd: workspacePath, env: { ...process.env, GIT_AUTHOR_NAME: 'toutkit', GIT_AUTHOR_EMAIL: 'app@toutkit', GIT_COMMITTER_NAME: 'toutkit', GIT_COMMITTER_EMAIL: 'app@toutkit' } });
+      await execFileAsync(bin, ['commit', '-m', 'Initial sync from notes app'],
+        { cwd: workspacePath, env: { ...process.env, GIT_AUTHOR_NAME: 'notes-app', GIT_AUTHOR_EMAIL: 'app@notes.local', GIT_COMMITTER_NAME: 'notes-app', GIT_COMMITTER_EMAIL: 'app@notes.local' } });
     } catch (err) {
       const output = (err.stderr || '') + (err.stdout || '');
       if (!output.includes('nothing to commit')) {
@@ -4345,7 +4345,7 @@ function inlineNoteAsHtml(noteFolderPath) {
   // Inject the note-viewer stylesheet so exported/shared notes match the in-app
   // theme. Placed last in <head> to override author defaults, matching how
   // webview.insertCSS layers it inside the app.
-  const styleBlock = `<style data-source="toutkit-share">\n${SHARE_NOTE_CSS}</style>`;
+  const styleBlock = `<style data-source="notes-app-share">\n${SHARE_NOTE_CSS}</style>`;
   if (/<\/head>/i.test(html)) {
     html = html.replace(/<\/head>/i, `${styleBlock}\n</head>`);
   } else if (/<body[^>]*>/i.test(html)) {
@@ -4769,7 +4769,7 @@ ipcMain.handle('export:standalone-source', async (_e, notePath_) => {
     // Write README
     const readme = `# ${noteTitle}
 
-Standalone Electron app exported from toutkit.
+Standalone Electron app exported from nextprob.
 
 ## Quick Start
 

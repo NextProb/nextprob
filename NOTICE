@@ -1,4 +1,4 @@
-ToutKit
+NextProb
 Copyright (c) 2026 Helicase Space LLC
 
 This product is licensed under the GNU Affero General Public License
@@ -9,7 +9,7 @@ text.
 
 Reserved names, marks, and assets (NOT covered by the AGPL-3.0 license):
 
-The product name "ToutKit" and the company brand "Helicase.space"
+The product name "NextProb" and the company brand "Helicase.space"
 (including typographic variants such as "Helicase Space" and
 "Helicase"), together with the icon files located at `assets/icon.icns`
 and `assets/icon.png`, are reserved marks and assets of Helicase Space
@@ -19,10 +19,10 @@ AGPL-3.0 or any other license.
 
 If you fork, redistribute, or build a derivative of this software, you
 must use your own product name and your own icon. Do not ship a build
-under the "ToutKit" or "Helicase.space" names or using the reserved icon
+under the "NextProb" or "Helicase.space" names or using the reserved icon
 files.
 
 ---
 
-Third-party software used by ToutKit is listed in THIRD_PARTY_LICENSES.md,
+Third-party software used by NextProb is listed in THIRD_PARTY_LICENSES.md,
 which is regenerated from package.json before each release.

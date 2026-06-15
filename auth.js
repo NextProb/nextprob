@@ -220,7 +220,7 @@ function _stopLoopbackServer() {
 
 /**
  * Handle the OAuth2 callback deep link.
- * Called from main.js when toutkit://auth/callback is received.
+ * Called from main.js when nextprob://auth/callback is received.
  * @param {string} url - Full deep link URL
  */
 async function handleCallback(url) {

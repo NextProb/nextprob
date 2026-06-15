@@ -104,7 +104,7 @@ class OpenClawBridge {
                   ...(gatewayToken ? { token: gatewayToken } : {}),
                 },
                 locale: 'en-US',
-                userAgent: 'toutkit/1.0.0',
+                userAgent: 'notes-app/1.0.0',
                 device: {
                   id: deviceIdentity.deviceId,
                   publicKey: rawPubKeyB64,

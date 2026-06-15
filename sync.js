@@ -160,7 +160,7 @@ async function readSyncPaused(workspacePath) {
   try {
     const { stdout } = await execFileAsync(
       bin,
-      ['config', '--local', '--get', 'toutkit.syncPaused'],
+      ['config', '--local', '--get', 'notesapp.syncPaused'],
       { cwd: workspacePath }
     );
     return stdout.trim() === 'true';
@@ -173,7 +173,7 @@ async function writeSyncPaused(workspacePath, paused) {
   const bin = findGitBin();
   await execFileAsync(
     bin,
-    ['config', '--local', 'toutkit.syncPaused', paused ? 'true' : 'false'],
+    ['config', '--local', 'notesapp.syncPaused', paused ? 'true' : 'false'],
     { cwd: workspacePath }
   );
 }
@@ -192,7 +192,7 @@ async function readSyncSetting(workspacePath, key) {
   try {
     const { stdout } = await execFileAsync(
       bin,
-      ['config', '--local', '--get', `toutkit.${key}`],
+      ['config', '--local', '--get', `notesapp.${key}`],
       { cwd: workspacePath }
     );
     return stdout.trim();
@@ -205,7 +205,7 @@ async function writeSyncSetting(workspacePath, key, value) {
   const bin = findGitBin();
   await execFileAsync(
     bin,
-    ['config', '--local', `toutkit.${key}`, String(value)],
+    ['config', '--local', `notesapp.${key}`, String(value)],
     { cwd: workspacePath }
   );
 }
@@ -292,7 +292,7 @@ async function disconnectSync(workspacePath) {
   try {
     await execFileAsync(
       bin,
-      ['config', '--local', '--unset', 'toutkit.syncPaused'],
+      ['config', '--local', '--unset', 'notesapp.syncPaused'],
       { cwd: workspacePath }
     );
   } catch { /* key may not be set — ignore */ }
@@ -440,7 +440,7 @@ async function recoverReclone(workspacePath, remoteUrl) {
   const workspaceBase = path.basename(workspacePath);
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
   const backupPath = path.join(path.dirname(workspacePath), `${workspaceBase}-backup-${timestamp}`);
-  const tmpDir = path.join(os.tmpdir(), `toutkit-reclone-${Date.now()}`);
+  const tmpDir = path.join(os.tmpdir(), `notes-reclone-${Date.now()}`);
 
   // 2. Backup non-.git files
   try {
@@ -846,7 +846,7 @@ async function checkAuth(workspacePath, remoteUrl) {
 
 // ─── Gitignore Management ─────────────────────────────────────────────────────
 
-const GITIGNORE_HEADER = '# toutkit sync defaults';
+const GITIGNORE_HEADER = '# notes-app sync defaults';
 const DEFAULT_GITIGNORE_ENTRIES = [
   'node_modules/',
   '.claude-temp/',
@@ -900,7 +900,7 @@ async function ensureGitignore(workspacePath) {
 
 // ─── Commit Engine (feature 69) ───────────────────────────────────────────────
 
-let COMMIT_DEBOUNCE_MS = Number(process.env.TOUTKIT_COMMIT_DEBOUNCE_MS) || 30000;
+let COMMIT_DEBOUNCE_MS = Number(process.env.NOTES_SYNC_COMMIT_DEBOUNCE_MS) || 30000;
 
 let _engineActive = false;
 let _engineWorkspacePath = null;
@@ -1004,7 +1004,7 @@ async function _executeCommit({ logSkips = false } = {}) {
         ['commit', '-m', `sync: ${timestamp}`],
         {
           cwd: _engineWorkspacePath,
-          env: { ...process.env, GIT_AUTHOR_NAME: 'toutkit', GIT_AUTHOR_EMAIL: 'app@toutkit', GIT_COMMITTER_NAME: 'toutkit', GIT_COMMITTER_EMAIL: 'app@toutkit' },
+          env: { ...process.env, GIT_AUTHOR_NAME: 'notes-app', GIT_AUTHOR_EMAIL: 'app@notes.local', GIT_COMMITTER_NAME: 'notes-app', GIT_COMMITTER_EMAIL: 'app@notes.local' },
         }
       );
     } catch (err) {
@@ -1021,7 +1021,7 @@ async function _executeCommit({ logSkips = false } = {}) {
 
 // ─── Push/Pull Engine (feature 70) ───────────────────────────────────────────
 
-const PUSH_PULL_TIMEOUT_MS = Number(process.env.TOUTKIT_PUSH_PULL_TIMEOUT_MS) || 30000;
+const PUSH_PULL_TIMEOUT_MS = Number(process.env.NOTES_SYNC_PUSH_PULL_TIMEOUT_MS) || 30000;
 // Mutable for test manipulation (e.g., splice to [50, 50, 50] for fast retries)
 const RETRY_DELAYS = [5000, 15000, 45000];
 
@@ -1285,7 +1285,7 @@ async function pushNow() {
 
 // ─── Auto Sync Loop (feature 71) ─────────────────────────────────────────────
 
-let PERIODIC_SYNC_INTERVAL_MS = Number(process.env.TOUTKIT_PERIODIC_SYNC_MS) || 300000;
+let PERIODIC_SYNC_INTERVAL_MS = Number(process.env.NOTES_SYNC_PERIODIC_INTERVAL_MS) || 300000;
 const FOCUS_PULL_COOLDOWN_MS = 60000;
 
 let _autoSyncActive = false;

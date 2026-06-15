@@ -1,6 +1,6 @@
-# ToutKit Contributor License Agreement (Individual)
+# NextProb Contributor License Agreement (Individual)
 
-Thank you for your interest in contributing to ToutKit, a project of
+Thank you for your interest in contributing to NextProb, a project of
 Helicase Space LLC (doing business as "Helicase.space"; in this
 Agreement, "Helicase Space", "we", or "us"). This Contributor License
 Agreement ("Agreement") clarifies the intellectual-property terms under
@@ -15,7 +15,7 @@ for that Contribution and for any future Contributions.
 
 - **"Contribution"** means any original work of authorship, including
   any modifications or additions to existing work, that You intentionally
-  submit to Helicase Space for inclusion in the ToutKit project.
+  submit to Helicase Space for inclusion in the NextProb project.
 - **"You"** means the individual submitting the Contribution.
 
 ## 2. Grant of Copyright License
@@ -41,7 +41,7 @@ it was submitted.
 
 You expressly agree that Helicase Space may license Your Contribution
 under any license terms, including proprietary terms, in addition to the
-AGPL-3.0 license under which the ToutKit project is released. This right
+AGPL-3.0 license under which the NextProb project is released. This right
 is given to Helicase Space alone; other recipients of the project
 continue to receive Your Contribution under the project's AGPL-3.0
 license.

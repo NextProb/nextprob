@@ -56,7 +56,7 @@ function writeMeta(workspacePath) {
   const dir = ensureDir(workspacePath);
   atomicWrite(path.join(dir, 'meta.json'), {
     updatedAt: new Date().toISOString(),
-    app: 'toutkit',
+    app: 'notes-app',
     pid: process.pid,
     workspacePath,
   });

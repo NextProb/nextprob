@@ -49,7 +49,7 @@ async function downloadTemplateFolders() {
       const download = (url, redirectCount = 0) => {
         if (redirectCount > 5) return reject(new Error('Too many redirects'));
         const mod = url.startsWith('https') ? https : require('http');
-        mod.get(url, { headers: { 'User-Agent': 'toutkit' } }, (res) => {
+        mod.get(url, { headers: { 'User-Agent': 'notes-app' } }, (res) => {
           if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
             return download(res.headers.location, redirectCount + 1);
           }

@@ -1,8 +1,8 @@
 'use strict';
 
 // GitHub OAuth Device Flow + token storage for the gist-backed sharing feature.
-// Companion to auth.js (which handles the toutkit/Cognito session). Lives separately
-// because the two identities are independent: a user is either signed into toutkit,
+// Companion to auth.js (which handles the NextProb/Cognito session). Lives separately
+// because the two identities are independent: a user is either signed into NextProb,
 // signed into GitHub, both, or neither.
 
 const { shell } = require('electron');
@@ -15,7 +15,7 @@ const _stage = process.env.APP_STAGE || 'dev';
 const _config = _configAll[_stage];
 const CLIENT_ID = _config && _config.githubClientId;
 const SCOPES = 'gist,public_repo';
-const USER_AGENT = 'ToutKit-Notes';
+const USER_AGENT = 'Notes-App';
 
 let _session = null;          // { accessToken, scopes, user, repoName? }
 let _connecting = null;       // { deviceCode, userCode, verificationUri, expiresAt, intervalMs, pollTimer }

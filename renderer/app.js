@@ -8379,7 +8379,7 @@ const SecuritySettings = (() => {
       body.innerHTML = `
         <p class="sharing-tab-desc">
           Sharing publishes individual notes to your own GitHub account as gists, rendered through GitHub Pages.
-          No toutkit servers in the path.
+           No nextprob servers in the path.
         </p>
         <div class="sharing-tab-actions">
           <button class="btn-primary" data-sharing-action="connect">Connect GitHub</button>
@@ -8440,7 +8440,7 @@ const SecuritySettings = (() => {
 
     let repoValueHtml;
     if (_repoEditing) {
-      const current = state.repoName || 'toutkit-shares';
+      const current = state.repoName || 'my-shared-notes';
       repoValueHtml = `
         <input type="text" id="sharing-repo-input" value="${esc(current)}" autocomplete="off" spellcheck="false" />
         <button class="sharing-tab-link-btn" data-sharing-action="save-repo">Save</button>
@@ -8499,7 +8499,7 @@ const SecuritySettings = (() => {
     }
 
     if (check.status === 'reusable') {
-      // Existing toutkit-shares repo of theirs — save and proceed silently.
+      // Existing my-shared-notes repo of theirs — save and proceed silently.
       const res = await window.api.githubSetRepoName(next);
       if (!res || !res.ok) {
         return setError((res && res.error) || 'Could not update repo name.');
@@ -13396,7 +13396,7 @@ const PublishModal = {
 
     if (name === 'connect') {
       body.innerHTML = `
-        <p>Sharing notes uses your own GitHub account. Notes are stored as gists and rendered via GitHub Pages — no toutkit servers in the path.</p>`;
+        <p>Sharing notes uses your own GitHub account. Notes are stored as gists and rendered via GitHub Pages — no nextprob servers in the path.</p>`;
       actions.innerHTML = `
         <button class="btn-secondary" data-pm-action="cancel">Cancel</button>
         <button class="btn-primary" data-pm-action="connect">Connect GitHub</button>`;
@@ -13420,7 +13420,7 @@ const PublishModal = {
         </div>
         <p>Pick a name for the GitHub repo that will host your share site. We'll create it on your account and add a small renderer page.</p>
         <label class="field-label" for="publish-repo-name">Repo name</label>
-        <input type="text" id="publish-repo-name" value="toutkit-shares" autocomplete="off" spellcheck="false" />
+        <input type="text" id="publish-repo-name" value="my-shared-notes" autocomplete="off" spellcheck="false" />
         <p id="publish-repo-validation" class="publish-validation hidden"></p>`;
       actions.innerHTML = `
         <button class="btn-secondary" data-pm-action="cancel">Cancel</button>

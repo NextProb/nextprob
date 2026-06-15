@@ -7,7 +7,7 @@
 const github = require('./github-auth');
 
 const GIST_FILENAME = 'note.html';
-const RENDERER_REPO_DESCRIPTION = 'Renderer for notes shared from ToutKit Notes';
+const RENDERER_REPO_DESCRIPTION = 'Renderer for notes shared from NextProb Notes';
 
 function _ok(res, msg) {
   if (res.status >= 200 && res.status < 300) return res.body;
@@ -89,7 +89,7 @@ async function getFileSha(repo, filePath) {
 // that already exists, we refuse to push unless its index.html is one of
 // ours (or the repo is empty). This stops us from clobbering an unrelated
 // repo if the user picks a name that's already taken.
-const RENDERER_MARKER = '<!-- toutkit-share-renderer -->';
+const RENDERER_MARKER = '<!-- notes-app-share-renderer -->';
 
 async function _assertSafeToProvision(repo) {
   const existing = await _getFile(repo, 'index.html');
@@ -97,7 +97,7 @@ async function _assertSafeToProvision(repo) {
   if (!existing.content.includes(RENDERER_MARKER)) {
     throw new Error(
       `Repo "${repo}" already exists on your account and looks like a different project ` +
-      `(its index.html isn't a ToutKit share renderer). Pick a different repo name in Settings → Sharing → Change.`
+      `(its index.html isn't a NextProb share renderer). Pick a different repo name in Settings → Sharing → Change.`
     );
   }
 }
