@@ -414,12 +414,19 @@ async function openWorkspace(wsPath) {
   // Runs on every workspace open (not just bootstrap) so existing projects
   // get AGENTS.md / GEMINI.md created and kept up-to-date.
   syncAllProviderInstructions(wsPath).catch(() => {});
+  // The quick-start belongs to the app installation, not to an individual
+  // workspace. Show it after the first workspace opens, even when that
+  // workspace already contains notes.
+  const showGettingStarted = !prefs.getGettingStartedShown();
+  if (showGettingStarted) prefs.setGettingStartedShown(true);
+
   console.log('[workspace:loaded] sending at', Date.now(), new Error().stack.split('\n').slice(1, 5).join(' | '));
   mainWindow.webContents.send("workspace:loaded", {
     path: wsPath,
     tree: buildFileTree(wsPath),
     gitStatus,
     healthReport,
+    showGettingStarted,
   });
 
   // AWS sync: init engines and trigger initial sync on workspace open (feature 146)
@@ -532,6 +539,13 @@ function createWindow() {
     {
       label: 'View',
       submenu: [
+        {
+          label: 'Toggle Sidebar',
+          accelerator: 'CmdOrCtrl+B',
+          click() {
+            mainWindow?.webContents.send('sidebar:toggle');
+          },
+        },
           // TAGS/BACKLINKS/GRAPH DISABLED
           // {
           //   label: 'Graph View',
@@ -607,6 +621,12 @@ function createWindow() {
       submenu: [
         { label: 'About NextProb', role: 'about' },
         { type: 'separator' },
+        {
+          label: 'Getting Started',
+          click() {
+            mainWindow?.webContents.send('onboarding:show');
+          },
+        },
         {
           label: 'Contact Support',
           click() {
@@ -1568,7 +1588,14 @@ ipcMain.handle('terminal:toggle', () => {
   if (!mainWindow) return false;
   return terminalManager.toggleTerminalWindow(mainWindow, workspacePath);
 });
+ipcMain.handle('terminal:open', () => {
+  if (!mainWindow) return false;
+  terminalManager.createTerminalWindow(mainWindow, workspacePath);
+  return true;
+});
 ipcMain.handle('terminal:isVisible', () => terminalManager.isTerminalVisible());
+ipcMain.handle('terminal:suspend', () => terminalManager.suspendTerminalWindow());
+ipcMain.handle('terminal:resume', () => terminalManager.resumeTerminalWindow());
 
 ipcMain.handle('window:maximize', () => {
   if (mainWindow.isMaximized()) mainWindow.unmaximize();

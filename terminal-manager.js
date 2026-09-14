@@ -16,6 +16,8 @@ let panelOffsets = null;
 let terminalState = 'normal';
 let savedBounds = null;
 let resizingProgrammatically = false;
+let terminalSuspended = false;
+let terminalShowWhenResumed = false;
 const TAB_BAR_HEIGHT = 42; // drag-bar (6px) + tab-bar (30px) + border (1px) + padding
 
 // Track IPC handlers so we can remove them on cleanup
@@ -452,7 +454,8 @@ function getInitialBounds(mainWindow) {
 
 function createTerminalWindow(mainWindow, workspacePath) {
   if (terminalWindow && !terminalWindow.isDestroyed()) {
-    terminalWindow.focus();
+    if (terminalSuspended) terminalShowWhenResumed = true;
+    else terminalWindow.focus();
     return;
   }
 
@@ -492,12 +495,17 @@ function createTerminalWindow(mainWindow, workspacePath) {
   terminalWindow.loadFile('terminal/terminal.html');
 
   terminalWindow.once('ready-to-show', () => {
+    if (terminalSuspended) {
+      terminalShowWhenResumed = true;
+      return;
+    }
     terminalWindow.show();
     notifyMainVisibility(true);
   });
 
   terminalWindow.on('closed', () => {
     terminalWindow = null;
+    terminalShowWhenResumed = false;
     killAllTabs();
     notifyMainVisibility(false);
   });
@@ -532,7 +540,7 @@ function createTerminalWindow(mainWindow, workspacePath) {
     if (terminalWindow && !terminalWindow.isDestroyed()) terminalWindow.hide();
   });
   mainWindow.on('restore', () => {
-    if (terminalWindow && !terminalWindow.isDestroyed()) {
+    if (!terminalSuspended && terminalWindow && !terminalWindow.isDestroyed()) {
       terminalWindow.show();
     }
   });
@@ -563,7 +571,30 @@ function toggleTerminalWindow(mainWindow, workspacePath) {
 }
 
 function isTerminalVisible() {
-  return !!(terminalWindow && !terminalWindow.isDestroyed());
+  return !!(terminalWindow && !terminalWindow.isDestroyed() && terminalWindow.isVisible());
+}
+
+function suspendTerminalWindow() {
+  terminalSuspended = true;
+  terminalShowWhenResumed ||= isTerminalVisible();
+  if (terminalShowWhenResumed && terminalWindow && !terminalWindow.isDestroyed()) {
+    terminalWindow.hide();
+    notifyMainVisibility(false);
+  }
+  return terminalShowWhenResumed;
+}
+
+function resumeTerminalWindow() {
+  terminalSuspended = false;
+  if (!terminalShowWhenResumed || !terminalWindow || terminalWindow.isDestroyed()) {
+    terminalShowWhenResumed = false;
+    return false;
+  }
+  terminalShowWhenResumed = false;
+  terminalWindow.show();
+  terminalWindow.focus();
+  notifyMainVisibility(true);
+  return true;
 }
 
 function setWorkspacePath(wsPath) {
@@ -601,6 +632,8 @@ module.exports = {
   destroyTerminalWindow,
   toggleTerminalWindow,
   isTerminalVisible,
+  suspendTerminalWindow,
+  resumeTerminalWindow,
   setWorkspacePath,
   notifyThemeChanged,
   cleanup,

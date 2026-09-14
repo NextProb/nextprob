@@ -30,6 +30,9 @@ const sidebarSearchEl = document.querySelector('.sidebar-search');
 const sidebarResizeEl = $("#sidebar-resize");
 const outlinePanelResizeEl = $("#outline-panel-resize");
 const sidebarEl = $("#sidebar");
+const sidebarToggleBtn = $("#sidebar-toggle-btn");
+const sidebarHeaderActionsEl = $("#sidebar-header-actions");
+const leftPanelBarEl = $("#left-panel-bar");
 const contextMenuEl = $("#context-menu");
 const aiDropOverlay = $("#ai-drop-overlay");
 const aiScrollBottom = $("#ai-scroll-bottom");
@@ -45,6 +48,10 @@ const aiModelSelect = $("#ai-model-select");
 const aiEffortSelect = $("#ai-effort-select");
 const aiPermissionSelect = $("#ai-permission-select");
 const atDropdown = $("#at-dropdown");
+const gettingStartedModal = $("#getting-started-modal");
+const gettingStartedModalContent = $("#getting-started-modal-content");
+let currentTree = null;
+let currentWorkspacePath = null;
 
 // ─── Custom Select Wrapper (design-system compliant dropdowns) ───────────────
 class CustomSelect {
@@ -795,7 +802,7 @@ function createPanelElement(panelId) {
 
   const emptyStateEl = document.createElement('div');
   emptyStateEl.className = 'empty-state';
-  emptyStateEl.textContent = 'Select a note or ask AI to create one';
+  renderPanelEmptyState(emptyStateEl);
 
   const webviewContainerEl = document.createElement('div');
   webviewContainerEl.className = 'webview-container';
@@ -815,6 +822,109 @@ function createPanelElement(panelId) {
   panelEl.appendChild(contentEl);
   return panelEl;
 }
+
+function workspaceHasNotes(tree) {
+  if (!tree || !Array.isArray(tree.children)) return false;
+  return tree.children.some((item) => {
+    if (item.type === 'note') return true;
+    if (item.type === 'file' && item.name.toLowerCase().endsWith('.html')) return true;
+    return item.type === 'folder' && workspaceHasNotes(item);
+  });
+}
+
+function renderGettingStarted(host, { compact = false } = {}) {
+  host.classList.toggle('getting-started-compact', compact);
+  host.innerHTML = `
+    <div class="getting-started-guide">
+      <div class="getting-started-eyebrow">Getting started</div>
+      <h2${compact ? '' : ' id="getting-started-modal-title"'}>Turn an idea into an interactive note</h2>
+      <p class="getting-started-intro">See how a simple conversation becomes something you can explore, use, and keep.</p>
+      <img class="getting-started-demo" src="../screenshots/how-it-works.gif" alt="An AI agent creating an interactive note in NextProb">
+      <button type="button" class="getting-started-prompt" data-copy="Create an interactive note that explains [topic] with examples and a small visualization."><span>Create an interactive note that explains [topic] with examples and a small visualization.</span><span class="getting-started-copy-label">Copy</span></button>
+      <p class="getting-started-motivation">Open the terminal, start your favorite agent, and tell it what you want to make. Your first note is one conversation away.</p>
+      <button type="button" class="btn-primary getting-started-terminal">Start creating in the terminal</button>
+    </div>`;
+
+  host.querySelector('.getting-started-terminal')?.addEventListener('click', async () => {
+    if (!compact) {
+      await closeGettingStarted({ showTerminal: true });
+      return;
+    }
+    window.api.openTerminal();
+  });
+  host.querySelectorAll('[data-copy]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(button.dataset.copy);
+        const label = button.querySelector('.getting-started-copy-label');
+        if (label) {
+          const previous = label.textContent;
+          label.textContent = 'Copied';
+          setTimeout(() => { label.textContent = previous; }, 1500);
+        } else {
+          _showSyncToast(`Copied ${button.dataset.copy}`);
+        }
+      } catch {
+        _showErrorToast('Could not copy to the clipboard.');
+      }
+    });
+  });
+}
+
+function renderPanelEmptyState(emptyStateEl) {
+  if (currentWorkspacePath && !workspaceHasNotes(currentTree)) {
+    renderGettingStarted(emptyStateEl, { compact: true });
+    return;
+  }
+  emptyStateEl.classList.remove('getting-started-compact');
+  emptyStateEl.textContent = 'Select a note or ask AI to create one';
+}
+
+function refreshPanelEmptyStates() {
+  document.querySelectorAll('.panel .empty-state').forEach(renderPanelEmptyState);
+}
+
+let gettingStartedTerminalSuspended = false;
+let gettingStartedOpenTerminalOnClose = false;
+
+async function openGettingStarted({ openTerminalOnClose = false } = {}) {
+  gettingStartedOpenTerminalOnClose ||= openTerminalOnClose;
+  if (!gettingStartedTerminalSuspended) {
+    await window.api.suspendTerminal();
+    gettingStartedTerminalSuspended = true;
+  }
+  renderGettingStarted(gettingStartedModalContent);
+  gettingStartedModal.classList.remove('hidden');
+  gettingStartedModal.querySelector('.getting-started-terminal')?.focus();
+}
+
+async function closeGettingStarted({ showTerminal = false } = {}) {
+  if (gettingStartedModal.classList.contains('hidden')) return;
+  gettingStartedModal.classList.add('hidden');
+
+  const releaseTerminal = gettingStartedTerminalSuspended;
+  const openTerminal = gettingStartedOpenTerminalOnClose || showTerminal;
+  gettingStartedTerminalSuspended = false;
+  gettingStartedOpenTerminalOnClose = false;
+
+  const terminalRestored = releaseTerminal
+    ? await window.api.resumeTerminal()
+    : false;
+  if (openTerminal && !terminalRestored) {
+    initialTerminalRequested = true;
+    requestAnimationFrame(() => {
+      _sendTerminalPanelBounds();
+      window.api.openTerminal();
+    });
+  }
+}
+
+$('#getting-started-close').addEventListener('click', () => closeGettingStarted());
+gettingStartedModal.querySelector('.modal-backdrop').addEventListener('click', () => closeGettingStarted());
+gettingStartedModal.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') closeGettingStarted();
+});
+window.api.onShowGettingStarted(() => openGettingStarted());
 
 function getWebviewForPanel(panelId) {
   return getActiveWebviewForPanel(panelId);
@@ -1060,13 +1170,11 @@ function setupDividerDrag(divEl) {
   updatePanelFocusIndicator(state);
 })();
 
-let currentTree = null;
 let selectedPath = null;
 let _saveTimeout = null;
 let isBusy = false;
 let thinkingIndicator = null;
 let expandedPaths = new Set();
-let currentWorkspacePath = null;
 function noteIdFromPath(filePath) {
   const rel = (currentWorkspacePath && filePath.startsWith(currentWorkspacePath + '/'))
     ? filePath.slice(currentWorkspacePath.length + 1)
@@ -1588,6 +1696,11 @@ function getSortMode() {
   return _currentSortMode;
 }
 
+const _sidebarToggleIcons = {
+  collapse: '<svg viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M9 2.5V11.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"></path><path d="M6 5L3.5 7L6 9" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"></path></svg>',
+  show: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" aria-hidden="true"><rect x="1.5" y="2" width="13" height="12" rx="1.5"></rect><path d="M5.5 2v12"></path></svg>',
+};
+
 function _updateSortChecks() {
   document.querySelectorAll('.sidebar-sub-menu [data-sort]').forEach(el => {
     const check = el.querySelector('.sort-check');
@@ -1614,6 +1727,40 @@ function _updateSortChecks() {
     }
   }
 })();
+
+function setSidebarVisible(visible, { persist = true } = {}) {
+  if (!sidebarEl || !sidebarResizeEl || !sidebarToggleBtn || !sidebarHeaderActionsEl || !leftPanelBarEl) return;
+
+  sidebarEl.classList.toggle('sidebar-hidden', !visible);
+  sidebarResizeEl.classList.toggle('sidebar-hidden', !visible);
+  leftPanelBarEl.classList.toggle('hidden', visible);
+  (visible ? sidebarHeaderActionsEl : leftPanelBarEl).appendChild(sidebarToggleBtn);
+  sidebarEl.setAttribute('aria-hidden', String(!visible));
+
+  const actionLabel = visible ? 'Hide sidebar' : 'Show sidebar';
+  sidebarToggleBtn.innerHTML = visible ? _sidebarToggleIcons.collapse : _sidebarToggleIcons.show;
+  sidebarToggleBtn.dataset.icon = visible ? 'collapse' : 'sidebar';
+  sidebarToggleBtn.title = actionLabel;
+  sidebarToggleBtn.setAttribute('aria-label', actionLabel);
+  sidebarToggleBtn.setAttribute('aria-expanded', String(visible));
+
+  if (persist) localStorage.setItem('sidebarVisible', String(visible));
+
+  requestAnimationFrame(() => {
+    if (typeof _sendTerminalPanelBounds === 'function') _sendTerminalPanelBounds();
+  });
+}
+
+function toggleSidebar() {
+  setSidebarVisible(sidebarEl.classList.contains('sidebar-hidden'));
+}
+
+(function initSidebarVisibility() {
+  setSidebarVisible(localStorage.getItem('sidebarVisible') !== 'false', { persist: false });
+})();
+
+sidebarToggleBtn?.addEventListener('click', toggleSidebar);
+window.api.onToggleSidebar?.(toggleSidebar);
 
 // Restore saved outline filter level
 (function initOutlineFilterLevel() {
@@ -5127,6 +5274,7 @@ function showApp(wsPath, tree) {
   isFiltering = false;
   savedExpandedPaths = null;
   currentTree = tree;
+  refreshPanelEmptyStates();
   refreshPublishedNotes().then(() => renderFilteredTree());
   renderFilteredTree();
 
@@ -9601,6 +9749,15 @@ window.api.onWorkspaceLoaded(async (data) => {
   // Load security settings for this workspace (used by webview creation)
   try { _cachedSecuritySettings = await window.api.getSecuritySettings(); } catch { _cachedSecuritySettings = null; }
   showApp(data.path, data.tree);
+  if (data.showGettingStarted) {
+    await openGettingStarted({ openTerminalOnClose: true });
+  } else if (!initialTerminalRequested) {
+    initialTerminalRequested = true;
+    requestAnimationFrame(() => {
+      _sendTerminalPanelBounds();
+      window.api.openTerminal();
+    });
+  }
 
   // Restore sidebar collapse/expand state now that currentWorkspacePath is set
   _notesLoadState();
@@ -9988,6 +10145,7 @@ window.api.onNotesUpdated((tree) => {
   }
 
   currentTree = tree;
+  refreshPanelEmptyStates();
   const newFileNodes = new Map(flattenFiles(tree).map(f => [f.path, f]));
 
   // ── Rename detection ──────────────────────────────────────────────────────
@@ -10773,6 +10931,7 @@ function scrollMessages() {
 // --- Expand / Collapse (4 states: hidden, collapsed, half, full) ---
 
 let aiExpandState = 'hidden';
+let initialTerminalRequested = false;
 
 const _expandIcons = {
   collapsed: '<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9L7 5L11 9"/></svg>',
@@ -10810,9 +10969,6 @@ function _setAiExpandState(state) {
   aiCollapseBtn.classList.toggle("hidden", isHidden);
   aiCollapseBtn.innerHTML = isCollapsed ? _closeIcon : _collapseIcon;
   aiCollapseBtn.title = isCollapsed ? 'Close chat' : 'Collapse chat';
-  // Sync bottom bar chat button active state
-  const chatBtn = document.getElementById('bottom-chat-btn');
-  if (chatBtn) chatBtn.classList.toggle('active', !isHidden);
   syncBottomBarDisclaimer();
   requestAnimationFrame(updateHistoryPanelHeight);
 }
@@ -10847,22 +11003,7 @@ function syncBottomBarDisclaimer() {
 // --- Bottom bar toggle buttons ---
 
 (function() {
-  const chatBtn = document.getElementById('bottom-chat-btn');
   const termBtn = document.getElementById('bottom-terminal-btn');
-
-  if (chatBtn) chatBtn.addEventListener('click', () => {
-    if (aiExpandState !== 'hidden') {
-      // Chat is visible — hide it
-      closeHistoryPanel();
-      setExpanded('hidden');
-    } else {
-      // Open chat, close terminal
-      window.api.isTerminalVisible().then(visible => {
-        if (visible) window.api.toggleTerminal();
-      });
-      setExpanded('half');
-    }
-  });
 
   if (termBtn) termBtn.addEventListener('click', () => {
     window.api.toggleTerminal();
@@ -16083,8 +16224,6 @@ window.api.onTerminalVisibilityChanged((visible, _height) => {
   syncBottomBarDisclaimer();
   // If terminal just opened, hide chat
   if (visible) {
-    const chatBtn = document.getElementById('bottom-chat-btn');
-    if (chatBtn) chatBtn.classList.remove('active');
     if (aiExpandState !== 'hidden') {
       closeHistoryPanel();
       setExpanded('hidden');
@@ -16099,13 +16238,15 @@ function _sendTerminalPanelBounds() {
   if (!window.api.sendTerminalPanelBounds) return;
   const sidebar = document.getElementById('sidebar');
   const sidebarResize = document.getElementById('sidebar-resize');
+  const leftBar = document.getElementById('left-panel-bar');
   const titleBar = document.getElementById('title-bar');
   const rightBar = document.getElementById('right-panel-bar');
 
   const bottomBar = document.getElementById('bottom-bar');
 
   const sidebarLeft = (sidebar ? sidebar.getBoundingClientRect().width : 0)
-    + (sidebarResize ? sidebarResize.getBoundingClientRect().width : 0);
+    + (sidebarResize ? sidebarResize.getBoundingClientRect().width : 0)
+    + (leftBar ? leftBar.getBoundingClientRect().width : 0);
   const titleBarHeight = titleBar ? titleBar.getBoundingClientRect().height : 0;
   const rightBarWidth = rightBar ? rightBar.getBoundingClientRect().width : 0;
   const bottomBarHeight = bottomBar ? bottomBar.getBoundingClientRect().height : 0;

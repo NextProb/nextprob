@@ -17,6 +17,15 @@
     </div>
   </div>
 
+  <!-- Recoverable quick start, opened from the Help menu -->
+  <div id="getting-started-modal" class="hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-box getting-started-modal-box glass" role="dialog" aria-modal="true" aria-labelledby="getting-started-modal-title">
+      <button id="getting-started-close" class="getting-started-close" type="button" aria-label="Close">&times;</button>
+      <div id="getting-started-modal-content"></div>
+    </div>
+  </div>
+
   <!-- Init confirmation modal (for both create & open) -->
   <div id="init-modal" class="hidden">
     <div class="modal-backdrop"></div>
@@ -614,24 +623,34 @@
     <aside id="sidebar">
       <div class="sidebar-header">
         <span id="workspace-name">Workspace</span>
-        <div class="sidebar-more-wrap">
-          <button id="sidebar-more-btn" class="sidebar-more-btn" title="More actions">
-            <svg fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><circle cx="3" cy="8" r="1.5"/><circle cx="8" cy="8" r="1.5"/><circle cx="13" cy="8" r="1.5"/></svg>
-          </button>
-          <div id="sidebar-more-menu" class="sidebar-more-menu glass hidden">
-            <div class="sidebar-menu-item sidebar-menu-sub-wrap" id="sidebar-menu-sort">
-              <span>Sort by</span>
-              <svg class="sidebar-menu-arrow" viewBox="0 0 10 10" fill="currentColor"><path d="M3 2l4 3-4 3z"/></svg>
-              <div class="sidebar-sub-menu glass">
-                <div class="sidebar-menu-item" data-sort="name"><span class="sort-check"></span>Name</div>
-                <div class="sidebar-menu-item" data-sort="mtime"><span class="sort-check"></span>Date modified</div>
-                <div class="sidebar-menu-item" data-sort="type"><span class="sort-check"></span>File type</div>
+        <div id="sidebar-header-actions" class="sidebar-header-actions">
+          <div class="sidebar-more-wrap">
+            <button id="sidebar-more-btn" class="sidebar-more-btn" title="More actions">
+              <svg fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><circle cx="3" cy="8" r="1.5"/><circle cx="8" cy="8" r="1.5"/><circle cx="13" cy="8" r="1.5"/></svg>
+            </button>
+            <div id="sidebar-more-menu" class="sidebar-more-menu glass hidden">
+              <div class="sidebar-menu-item sidebar-menu-sub-wrap" id="sidebar-menu-sort">
+                <span>Sort by</span>
+                <svg class="sidebar-menu-arrow" viewBox="0 0 10 10" fill="currentColor"><path d="M3 2l4 3-4 3z"/></svg>
+                <div class="sidebar-sub-menu glass">
+                  <div class="sidebar-menu-item" data-sort="name"><span class="sort-check"></span>Name</div>
+                  <div class="sidebar-menu-item" data-sort="mtime"><span class="sort-check"></span>Date modified</div>
+                  <div class="sidebar-menu-item" data-sort="type"><span class="sort-check"></span>File type</div>
+                </div>
               </div>
+              <div class="sidebar-menu-item" id="menu-expand-all">Expand all</div>
+              <div class="sidebar-menu-item" id="menu-collapse-all">Collapse all</div>
+              <div class="sidebar-menu-item" id="menu-change-workspace">Change workspace</div>
             </div>
-            <div class="sidebar-menu-item" id="menu-expand-all">Expand all</div>
-            <div class="sidebar-menu-item" id="menu-collapse-all">Collapse all</div>
-            <div class="sidebar-menu-item" id="menu-change-workspace">Change workspace</div>
           </div>
+          <button id="sidebar-toggle-btn" class="sidebar-toggle-btn" type="button"
+                  title="Hide sidebar" aria-label="Hide sidebar" aria-expanded="true"
+                  aria-controls="sidebar">
+            <svg viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <path d="M9 2.5V11.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"></path>
+              <path d="M6 5L3.5 7L6 9" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+          </button>
         </div>
       </div>
       <!-- SEARCH DISABLED
@@ -763,6 +782,11 @@
     </aside>
     <div id="sidebar-resize"></div>
 
+    <!-- Recovery rail shown only while the sidebar is hidden -->
+    <div id="left-panel-bar" class="hidden" role="toolbar" aria-label="Sidebar controls">
+      <div class="left-bar-spacer"></div>
+    </div>
+
     <!-- Context menu (right-click on sidebar items or tabs) -->
     <div id="context-menu" class="glass hidden"></div>
 
@@ -837,10 +861,6 @@
 
       <!-- Bottom toggle bar -->
       <div id="bottom-bar">
-        <button id="bottom-chat-btn" title="Toggle chat">
-          <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2.5h10a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H8l-3 2.5V10.5H2a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1z"/></svg>
-          Chat
-        </button>
         <button id="bottom-terminal-btn" title="Toggle terminal">
           <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="2.5" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.1"/><path d="M3.5 5.5L6 7.5L3.5 9.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.5 9.5H10.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
           Terminal

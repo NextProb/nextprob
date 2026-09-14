@@ -176,6 +176,16 @@ function setAwsSyncPromptShown(value) {
   save(p);
 }
 
+function getGettingStartedShown() {
+  return load().gettingStartedShown ?? false;
+}
+
+function setGettingStartedShown(value) {
+  const p = load();
+  p.gettingStartedShown = !!value;
+  save(p);
+}
+
 function getTheme() {
   return load().theme || null;
 }
@@ -199,4 +209,4 @@ function setSidebarStateKey(wsPath, key, value) {
   save(p);
 }
 
-module.exports = { load, save, getLastWorkspace, setLastWorkspace, getGitignoreTemplates, setGitignoreTemplates, getAuthor, setAuthor, getLastProvider, setLastProvider, getLastModel, setLastModel, getLastEffort, setLastEffort, getLastPermissionMode, setLastPermissionMode, getUnsetApiKeys, setUnsetApiKeys, getOpenaiCompatEndpoints, setOpenaiCompatEndpoints, getAwsSyncEnabled, setAwsSyncEnabled, getAwsSyncPaused, setAwsSyncPaused, getServerSyncPausedEndpoints, setServerSyncPausedEndpoints, getAwsSyncPromptShown, setAwsSyncPromptShown, getOpenclawRemoteEndpoints, setOpenclawRemoteEndpoints, getSshSyncEndpoints, setSshSyncEndpoints, getTheme, setTheme, getSidebarState, setSidebarStateKey };
+module.exports = { load, save, getLastWorkspace, setLastWorkspace, getGitignoreTemplates, setGitignoreTemplates, getAuthor, setAuthor, getLastProvider, setLastProvider, getLastModel, setLastModel, getLastEffort, setLastEffort, getLastPermissionMode, setLastPermissionMode, getUnsetApiKeys, setUnsetApiKeys, getOpenaiCompatEndpoints, setOpenaiCompatEndpoints, getAwsSyncEnabled, setAwsSyncEnabled, getAwsSyncPaused, setAwsSyncPaused, getServerSyncPausedEndpoints, setServerSyncPausedEndpoints, getAwsSyncPromptShown, setAwsSyncPromptShown, getGettingStartedShown, setGettingStartedShown, getOpenclawRemoteEndpoints, setOpenclawRemoteEndpoints, getSshSyncEndpoints, setSshSyncEndpoints, getTheme, setTheme, getSidebarState, setSidebarStateKey };

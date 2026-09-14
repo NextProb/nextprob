@@ -108,10 +108,15 @@ contextBridge.exposeInMainWorld("api", {
   // Window
   closeWindow: () => ipcRenderer.invoke('window:close'),
   windowMaximize: () => ipcRenderer.invoke('window:maximize'),
+  onToggleSidebar: (cb) => ipcRenderer.on('sidebar:toggle', () => cb()),
+  onShowGettingStarted: (cb) => ipcRenderer.on('onboarding:show', () => cb()),
 
   // Terminal
   toggleTerminal: () => ipcRenderer.invoke('terminal:toggle'),
+  openTerminal: () => ipcRenderer.invoke('terminal:open'),
   isTerminalVisible: () => ipcRenderer.invoke('terminal:isVisible'),
+  suspendTerminal: () => ipcRenderer.invoke('terminal:suspend'),
+  resumeTerminal: () => ipcRenderer.invoke('terminal:resume'),
   onTerminalVisibilityChanged: (cb) => ipcRenderer.on('terminal:visibilityChanged', (_e, visible, height) => cb(visible, height)),
   sendTerminalPanelBounds: (bounds) => ipcRenderer.send('terminal:panelBounds', bounds),
 
