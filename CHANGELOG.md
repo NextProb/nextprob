@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] — 2026-10-07
+
+### Changed
+
+- Shared and exported notes now follow the reader's OS color scheme (light/dark) instead of always rendering light, and match the in-app viewer styling. Archived web clips keep their original styling.
+
+## [0.3.0] — 2026-09-14
+
+### Added
+
+- Collapsible sidebar — hide or show it with the toolbar button, `Cmd/Ctrl+B`, or View → Toggle Sidebar. The choice is remembered across sessions.
+- Getting Started guide — shown on your first workspace and reopenable anytime from Help → Getting Started, with a one-click starter prompt and a short demo.
+
+### Fixed
+
+- Restored the app icon (the previous build shipped the wordmark as the app icon).
+
+## [0.2.0] — 2026-06-15
+
+First NextProb release (rebranded from ToutKit).
+
 ## [0.1.1] — 2026-05-08
 
 ### Fixed
