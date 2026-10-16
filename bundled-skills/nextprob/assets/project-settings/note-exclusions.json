@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "hiddenFiles": [
+    "AGENTS.md",
+    "AGENTS.override.md",
+    "AGENTS.MD",
+    "CLAUDE.md",
+    "CLAUDE.local.md",
+    "CLAUDE.MD",
+    "GEMINI.md",
+    "GEMINI.MD",
+    ".DS_Store"
+  ],
+  "hiddenFolders": [
+    ".claude",
+    ".vscode",
+    ".context",
+    "_templates",
+    ".gemini",
+    ".codex",
+    ".opencode",
+    ".pi",
+    ".Trash"
+  ]
+}

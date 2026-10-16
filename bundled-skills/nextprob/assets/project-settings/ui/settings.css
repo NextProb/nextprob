@@ -1,0 +1,120 @@
+/* Public default settings note styles. Custom notes can replace or extend these. */
+:root {
+  color-scheme: light dark;
+  --bg: #fff; --bg-secondary: #f3f5f5; --text: #202928; --text-muted: #687371;
+  --border: #e3e8e6; --accent: #24675f; --danger: #b53737;
+  font: 13px/1.5 system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#1c211f; --bg-secondary:#29312e; --text:#e1e8e4; --text-muted:#a3afa8; --border:#39443d; --accent:#76b6a4; --danger:#f48e8e; } }
+:root[data-theme="dark"] { color-scheme: dark; --bg:#1c211f; --bg-secondary:#29312e; --text:#e1e8e4; --text-muted:#a3afa8; --border:#39443d; --accent:#76b6a4; --danger:#f48e8e; }
+:root[data-theme="light"] { color-scheme: light; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: default; opacity: .45; }
+button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn-secondary { border: 1px solid var(--border); border-radius: 6px; background: var(--bg); padding: 6px 10px; }
+.btn-secondary:hover:not(:disabled) { background: var(--bg-secondary); }
+#project-settings-body { height: 100vh; display: flex; flex-direction: column; }
+.project-settings-layout { display: grid; flex: 1; min-height: 0; grid-template-columns: 180px minmax(0,1fr); }
+.project-settings-list { overflow-y: auto; padding: 16px 12px; background: var(--bg-secondary); border-right: 1px solid var(--border); }
+.project-settings-group h3 { color: var(--text-muted); text-transform: uppercase; margin: 20px 8px 6px; font-size: 10px; letter-spacing: .07em; font-weight: 650; }
+.project-settings-group:first-child h3 { margin-top: 4px; }
+.project-settings-resource { display: block; width: 100%; text-align: left; overflow-wrap: anywhere; color: var(--text); background: transparent; border: 0; border-radius: 6px; font-size: 12px; line-height: 1.4; padding: 7px 10px; margin: 2px 0; }
+.project-settings-resource:hover { background: var(--bg); }
+.project-settings-resource.selected { background: var(--bg); color: var(--accent); font-weight: 600; outline: none; }
+.project-settings-resource:focus-visible { outline: 2px solid var(--accent); }
+.project-settings-advanced { margin-top: 20px; }
+.project-settings-advanced > summary { color: var(--text-muted); cursor: pointer; font-size: 12px; padding: 8px 0; }
+.project-settings-editor { min-width: 0; padding: 22px 28px 0; overflow: auto; scrollbar-gutter: stable; }
+.project-settings-editor > h3 { margin: 0 0 6px; font-size: 21px; letter-spacing: -.025em; font-weight: 650; }
+.project-settings-editor code { overflow-wrap: anywhere; font-size: 12px; }
+.project-settings-description, .project-settings-notice { font-size: 12px; line-height: 1.5; color: var(--text-muted); margin: 5px 0 16px; }
+.project-settings-toolbar { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
+.project-settings-toolbar button { padding: 5px 9px; font-size: 12px; }
+.project-settings-document-slot > .project-settings-toolbar, .project-settings-editor > .project-settings-toolbar { position: sticky; bottom: 0; background: var(--bg); margin: 18px 0 0; border-top: 1px solid var(--border); padding: 12px 0; z-index: 2; }
+.project-settings-toolbar [data-project-save] { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+.project-settings-file-actions { margin-left: auto; order: 3; font-size: 12px; }
+.project-settings-file-actions > summary { cursor: pointer; padding: 5px 9px; color: var(--text-muted); }
+.project-settings-file-actions[open] { width: 100%; order: 4; padding-bottom: 6px; }
+.project-settings-file-actions code { display: block; margin: 6px 9px; }
+.project-settings-file-actions button { margin: 3px; }
+.project-settings-source { width: 100%; min-height: 220px; resize: vertical; padding: 10px; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px; font: 12px/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; tab-size: 2; }
+.project-settings-field { display: grid; grid-template-columns: minmax(90px, 1fr) minmax(0, 2fr); gap: 10px; align-items: center; margin: 6px 0; font-size: 12px; }
+.project-settings-field span { overflow-wrap: anywhere; }
+.project-settings-field input, .project-settings-field select { min-width: 0; padding: 6px; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 4px; }
+.project-settings-field input[type="checkbox"] { justify-self: start; }
+.project-settings-status { white-space: pre-wrap; padding: 9px 18px; border-top: 1px solid var(--border); min-height: 36px; background: var(--bg); font-size: 11px; color: var(--text-muted); }
+.project-settings-error { color: var(--danger); font-size: 12px; }
+.project-settings-preview { overflow-wrap: anywhere; font-size: 13px; line-height: 1.6; }
+.project-settings-preview pre, .project-settings-card pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+.project-settings-section { margin: 14px 0; }
+.project-settings-section h4 { margin: 0 0 10px; font-size: 13px; font-weight: 600; }
+.project-settings-control { display: grid; grid-template-columns: minmax(0, 1fr) minmax(100px, 45%); gap: 20px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.project-settings-caption { display: grid; gap: 5px; }
+.project-settings-caption small { color: var(--text-muted); font-size: 11px; line-height: 1.5; }
+.project-settings-control input:not([type="checkbox"]), .project-settings-control select, .project-settings-control textarea { width: 100%; min-width: 0; border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; background: var(--bg); color: var(--text); font: inherit; }
+.project-settings-control textarea { min-height: 90px; resize: vertical; font-family: monospace; }
+.project-settings-control input[role="switch"] { appearance: none; justify-self: end; width: 34px; height: 20px; border-radius: 12px; background: var(--text-muted); cursor: pointer; position: relative; flex-shrink: 0; margin: 0; }
+.project-settings-control input[role="switch"]::after { content: ''; display: block; position: absolute; width: 14px; height: 14px; border-radius: 50%; background: white; top: 3px; left: 3px; transition: transform .15s; }
+.project-settings-control input[role="switch"]:checked { background: var(--accent); }
+.project-settings-control input[role="switch"]:checked::after { transform: translateX(14px); }
+.project-settings-card { border: 1px solid var(--border); border-radius: 6px; margin: 8px 0; padding: 0 12px; }
+.project-settings-card > summary { cursor: pointer; padding: 10px 0; font-size: 12px; font-weight: 500; }
+.project-settings-card > summary:has(.project-settings-summary-control) { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+.project-settings-card > summary:has(.project-settings-summary-control)::before { content: '▸'; }
+.project-settings-card[open] > summary:has(.project-settings-summary-control)::before { content: '▾'; }
+.project-settings-summary-control { display: flex; padding: 0; margin-left: auto; gap: 10px; font-size: 11px; color: var(--text-muted); }
+.project-settings-summary-control .project-settings-caption small { display: none; }
+.project-settings-item-actions { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 0; }
+.project-settings-item-actions button { font-size: 11px; padding: 5px 8px; }
+.project-settings-form > .project-settings-card { margin-top: 24px; }
+.project-settings-form [hidden] { display: none !important; }
+.project-settings-card > summary[draggable="true"] { user-select: none; }
+.project-settings-card > summary[draggable="true"] > .project-settings-item-title::before { content: '⠿'; margin-right: 8px; color: var(--text-muted); }
+.project-settings-add-entry { display: flex; gap: 8px; margin: 0 0 12px; }
+.project-settings-add-entry input { flex: 1; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); padding: 7px 10px; min-width: 0; }
+.project-settings-page-section { margin: 20px 0; }
+.project-settings-page-section > h4 { font-size: 13px; margin: 10px 0 4px; }
+.project-settings-document-slot { min-width: 0; }
+.project-settings-document-heading { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; font-size: 13px; }
+.project-settings-document-heading small { color: var(--text-muted); flex: 1; }
+.project-settings-document-slot > code { display: block; color: var(--text-muted); margin-top: 5px; }
+.project-settings-folder { padding: 7px 0; font-size: 12px; }
+.project-settings-folder > summary, .project-settings-package > details > summary { cursor: pointer; padding: 6px 0; }
+.project-settings-folder > div { margin-left: 16px; border-left: 1px solid var(--border); padding-left: 12px; }
+.project-settings-browser-file > button { background: transparent; color: var(--text); border: 0; text-align: left; padding: 7px 5px; overflow-wrap: anywhere; }
+.project-settings-package { border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin: 12px 0; }
+.project-settings-package h4 { margin: 0 0 7px; font-size: 14px; }
+.project-settings-package small, .project-settings-policy { color: var(--text-muted); }
+.project-settings-package code { display: block; }
+.project-settings-policy { margin-top: 16px; font-size: 12px; }
+.project-settings-rule-row { display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border); padding: 5px 0; }
+.project-settings-rule-row input { flex: 1; min-width: 70px; color: var(--text); border: 1px solid transparent; border-radius: 4px; padding: 5px 7px; font: 12px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace; background: transparent; }
+.project-settings-rule-row input:hover, .project-settings-rule-row input:focus { border-color: var(--border); background: var(--bg-secondary); }
+.project-settings-rule-row button { background: transparent; border-color: transparent; color: var(--text-muted); font-size: 11px; white-space: nowrap; padding: 4px 6px; }
+.project-settings-rule-origin { color: var(--text-muted); font-size: 10px; white-space: nowrap; }
+.project-settings-rules > .project-settings-card { margin-top: 16px; }
+.project-settings-baseline > div { display: flex; gap: 12px; justify-content: space-between; padding: 5px 0; }
+.project-settings-baseline small { color: var(--text-muted); }
+@media (max-width: 620px) {
+  .project-settings-layout { grid-template-columns: 140px minmax(0, 1fr); }
+  .project-settings-editor { padding: 18px 14px 0; }
+  .project-settings-list { padding: 12px 6px; }
+  .project-settings-rule-origin { display: none; }
+  .project-settings-rule-row:has([data-rule-id]) { flex-wrap: wrap; }
+  .project-settings-control { gap: 10px; }
+}
+@media (max-width: 440px) {
+  .project-settings-layout { grid-template-columns: 110px minmax(0,1fr); }
+  .project-settings-resource { font-size: 11px; padding: 6px; }
+  .project-settings-control { grid-template-columns: 1fr; gap: 8px; }
+}
+.project-settings-agent-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 16px 0; }
+.project-settings-agent-toolbar label { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.project-settings-agent-toolbar select, .project-settings-agent-form input, .project-settings-agent-form textarea { min-width: 0; padding: 8px; border: 1px solid var(--border); border-radius: 5px; background: var(--bg); color: var(--text); font: inherit; }
+.project-settings-agent-form { max-width: 650px; }
+.project-settings-agent-form > label { display: grid; gap: 7px; margin: 16px 0; font-size: 12px; }
+.project-settings-agent-form textarea { width: 100%; min-height: 70px; resize: vertical; font-family: monospace; }
+.project-settings-agent-origin { display: block; margin-top: 5px; color: var(--text-muted); font-size: 11px; }

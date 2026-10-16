@@ -1,0 +1,348 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nextprob.app/schemas/project-config-v1.json",
+  "title": "NextProb project display configuration",
+  "description": "Save as nextprob.config.json in the project root. Collection definitions are reusable across surfaces. Explicit sidebar sections replace the default list. Omitted settings retain defaults. Runtime validation also bounds and validates the documented JSONLogic subset.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version"
+  ],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "collections": {
+      "type": "object",
+      "maxProperties": 100,
+      "propertyNames": {
+        "$ref": "#/$defs/id"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/collection"
+      }
+    },
+    "surfaces": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "sidebar": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "hideDotFolders": {
+              "type": "boolean",
+              "default": true,
+              "description": "Hide dot-prefixed folders and files from tree sections. Does not affect collections."
+            },
+            "sections": {
+              "type": "array",
+              "maxItems": 100,
+              "items": {
+                "$ref": "#/$defs/section"
+              }
+            },
+            "hideOfficialFiles": {
+              "type": "boolean",
+              "default": true,
+              "description": "Apply the current official support-file and folder exclusions to all tree sections. Project-specific exclusions remain active when false."
+            }
+          }
+        }
+      }
+    },
+    "metadataFields": {
+      "type": "object",
+      "maxProperties": 100,
+      "propertyNames": {
+        "$ref": "#/$defs/id"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/metadataField"
+      },
+      "description": "Named read-only projections from each folder note’s KV store. Collection rules may reference metadata.<id> for declared fields."
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,63}$",
+      "not": {
+        "enum": [
+          "constructor",
+          "prototype",
+          "__proto__"
+        ]
+      }
+    },
+    "source": {
+      "enum": [
+        "items",
+        "notes"
+      ]
+    },
+    "sort": {
+      "enum": [
+        "title",
+        "name",
+        "path",
+        "modifiedAt",
+        "favoriteOrder"
+      ]
+    },
+    "rule": {
+      "description": "JSONLogic subset: ===, !==, ==, !=, >, >=, <, <=, and, or, !, !!, in, var. Variables: relativePath, kind, title, name, extension, ancestorPaths, modifiedAt, favorite, favoriteOrder, capabilities, capabilities.open, capabilities.createFromTemplate. Declared metadata.<id> variables are also supported. No executable JavaScript. Maximum depth 20, 256 nodes, 50 entries per array.",
+      "type": [
+        "object",
+        "array",
+        "string",
+        "number",
+        "boolean",
+        "null"
+      ]
+    },
+    "collection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source"
+      ],
+      "properties": {
+        "source": {
+          "$ref": "#/$defs/source"
+        },
+        "where": {
+          "$ref": "#/$defs/rule"
+        },
+        "sort": {
+          "$ref": "#/$defs/sort"
+        }
+      }
+    },
+    "section": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title",
+        "view"
+      ],
+      "oneOf": [
+        {
+          "required": [
+            "source"
+          ],
+          "not": {
+            "required": [
+              "collection"
+            ]
+          }
+        },
+        {
+          "required": [
+            "collection"
+          ],
+          "not": {
+            "required": [
+              "source"
+            ]
+          }
+        }
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "\\S"
+        },
+        "view": {
+          "enum": [
+            "list",
+            "tree"
+          ]
+        },
+        "source": {
+          "$ref": "#/$defs/source"
+        },
+        "collection": {
+          "$ref": "#/$defs/id"
+        },
+        "sort": {
+          "$ref": "#/$defs/sort"
+        },
+        "hideWhenEmpty": {
+          "type": "boolean"
+        },
+        "hiddenFolders": {
+          "type": "array",
+          "maxItems": 1000,
+          "description": "Additional project-relative directory paths hidden in this section. Combined with current resource defaults, minus shownFolders. Use / separators.",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^(?![A-Za-z]:)(?!/)(?!.*\\\\)(?!.*(?:^|/)\\.{1,2}(?:/|$))(?!.*//)(?!.*\u0000).*[^/]$"
+          }
+        },
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show this section in the sidebar. Disabled sections keep their configuration."
+        },
+        "hiddenFiles": {
+          "type": "array",
+          "maxItems": 1000,
+          "description": "Additional filenames at any depth or exact project-relative file paths hidden in this tree section. Combined with current resource defaults, minus shownFiles. Case-sensitive; no wildcards; collections are unaffected.",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^(?!.*[*?\\[\\]])(?![A-Za-z]:)(?!/)(?!.*\\\\)(?!.*(?:^|/)\\.{1,2}(?:/|$))(?!.*//)(?!.*\u0000).*[^/]$"
+          }
+        },
+        "shownFolders": {
+          "type": "array",
+          "maxItems": 1000,
+          "description": "Explicitly removed directory exclusions. These paths stay visible when resource defaults change; also allows these directory segments through the dot-folder filter. Use / separators.",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^(?![A-Za-z]:)(?!/)(?!.*\\\\)(?!.*(?:^|/)\\.{1,2}(?:/|$))(?!.*//)(?!.*\u0000).*[^/]$"
+          }
+        },
+        "shownFiles": {
+          "type": "array",
+          "maxItems": 1000,
+          "description": "Explicitly removed file exclusions. These filenames or exact project-relative paths stay visible when resource defaults change; also allows matching dot-prefixed filenames through the dot-file filter. Case-sensitive; no wildcards.",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^(?!.*[*?\\[\\]])(?![A-Za-z]:)(?!/)(?!.*\\\\)(?!.*(?:^|/)\\.{1,2}(?:/|$))(?!.*//)(?!.*\u0000).*[^/]$"
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "hiddenFolders"
+            ]
+          },
+          "then": {
+            "properties": {
+              "view": {
+                "const": "tree"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "hiddenFiles"
+            ]
+          },
+          "then": {
+            "properties": {
+              "view": {
+                "const": "tree"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "shownFolders"
+            ]
+          },
+          "then": {
+            "properties": {
+              "view": {
+                "const": "tree"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "shownFiles"
+            ]
+          },
+          "then": {
+            "properties": {
+              "view": {
+                "const": "tree"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "metadataField": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source",
+        "key",
+        "read"
+      ],
+      "properties": {
+        "source": {
+          "const": "noteKv"
+        },
+        "key": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^[^\u0000]+$",
+          "not": {
+            "enum": [
+              "constructor",
+              "prototype",
+              "__proto__"
+            ]
+          },
+          "description": "Literal top-level KV key; dots do not traverse objects."
+        },
+        "read": {
+          "enum": [
+            "value",
+            "exists",
+            "truthy"
+          ]
+        },
+        "type": {
+          "enum": [
+            "string",
+            "number",
+            "boolean",
+            "array"
+          ]
+        }
+      },
+      "if": {
+        "properties": {
+          "read": {
+            "const": "value"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "type"
+        ]
+      },
+      "else": {
+        "not": {
+          "required": [
+            "type"
+          ]
+        }
+      }
+    }
+  }
+}

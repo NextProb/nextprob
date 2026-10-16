@@ -7,6 +7,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] — 2026-10-16
+
+### Added
+
+- Editable file and folder exclusions for sidebar trees, with updated defaults that preserve project customizations.
+- Sidebar collections can filter notes by project-defined metadata, including publication status.
+
+### Changed
+
+- Renaming an HTML note updates its display title and open tabs while preserving its file or folder path.
+
+## [0.3.5] — 2026-10-15
+
+### Added
+
+- Customizable HTML interfaces for Project Settings.
+- AI assistance settings for Claude, Codex, Gemini CLI, OpenCode, and Pi, including custom project agents and formatting-preserving TOML and JSONC source editing.
+
+### Fixed
+
+- Gemini CLI project instructions use the root `GEMINI.md`, preserving existing guidance during migration.
+
+## [0.3.4] — 2026-10-15
+
+### Fixed
+
+- Settings catalog upgrades and stale background downloads no longer revert newer settings interfaces.
+
+## [0.3.3] — 2026-10-15
+
+### Changed
+
+- Organized Project Settings into task-based pages for appearance, exclusions, AI instructions, and skills, with resource browsers.
+
+## [0.3.2] — 2026-10-15
+
+### Added
+
+- Configurable sidebar sections and collections.
+- Project Settings for editing project configuration, instructions, and exclusion rules, with structured forms and source editing.
+- Bundled NextProb guidance for coding agents working in a project.
+
 ## [0.3.1] — 2026-10-07
 
 ### Changed
@@ -27,6 +69,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.2.0] — 2026-06-15
 
 First NextProb release (rebranded from ToutKit).
+
+## [0.1.2] — 2026-05-09
+
+### Fixed
+
+- Shared and exported notes preserve UTF-8 text encoding.
 
 ## [0.1.1] — 2026-05-08
 

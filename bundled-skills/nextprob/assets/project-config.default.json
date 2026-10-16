@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "collections": {
+    "favorites": {
+      "source": "items",
+      "where": {
+        "===": [
+          {
+            "var": "favorite"
+          },
+          true
+        ]
+      },
+      "sort": "favoriteOrder"
+    }
+  },
+  "surfaces": {
+    "sidebar": {
+      "hideDotFolders": true,
+      "sections": [
+        {
+          "id": "favorites",
+          "title": "Favorites",
+          "view": "list",
+          "collection": "favorites",
+          "hideWhenEmpty": true
+        },
+        {
+          "id": "files",
+          "title": "Probs",
+          "view": "tree",
+          "source": "items"
+        }
+      ]
+    }
+  }
+}

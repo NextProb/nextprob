@@ -23,7 +23,7 @@ async function main() {
   // 2. Copy note-viewer.css into the template
   console.log('Copying note-viewer.css...');
   fs.copyFileSync(
-    path.join(ROOT, 'note-viewer.css'),
+    path.join(ROOT, 'src', 'renderer', 'note-viewer.css'),
     path.join(TEMPLATE_DIR, 'note-viewer.css')
   );
 

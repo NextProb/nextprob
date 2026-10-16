@@ -27,7 +27,8 @@ npm start
 ```
 
 There is no build step — all source is vanilla CommonJS JavaScript. Edits to
-files under `renderer/` and the root `*.js` files take effect on app restart.
+files under `src/` take effect on app restart. See the README source layout for
+process boundaries and feature directories.
 
 ## Pull requests
 

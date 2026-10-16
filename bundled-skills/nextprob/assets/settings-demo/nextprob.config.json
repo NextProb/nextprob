@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "collections": {
+    "favorites": {
+      "source": "items",
+      "where": {
+        "===": [
+          {
+            "var": "favorite"
+          },
+          true
+        ]
+      },
+      "sort": "favoriteOrder"
+    },
+    "templates": {
+      "source": "notes",
+      "where": {
+        "in": [
+          "_templates",
+          {
+            "var": "ancestorPaths"
+          }
+        ]
+      },
+      "sort": "title"
+    }
+  },
+  "surfaces": {
+    "sidebar": {
+      "hideDotFolders": true,
+      "sections": [
+        {
+          "id": "favorites",
+          "title": "Favorites",
+          "view": "list",
+          "collection": "favorites",
+          "hideWhenEmpty": true
+        },
+        {
+          "id": "notes",
+          "title": "All notes",
+          "view": "tree",
+          "source": "notes",
+          "hiddenFolders": [
+            "_templates"
+          ]
+        },
+        {
+          "id": "templates",
+          "title": "Templates",
+          "view": "list",
+          "collection": "templates",
+          "hideWhenEmpty": true
+        },
+        {
+          "id": "files",
+          "title": "Files",
+          "view": "list",
+          "source": "items",
+          "enabled": false
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,6 @@
+# Keep generated output out of sync
+build/
+node_modules/
+
+# Keep this example
+!important.txt

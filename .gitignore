@@ -37,3 +37,8 @@ auth-config.json
 .claude/
 CLAUDE.md
 
+# Portable skill examples intentionally include tool configuration.
+!bundled-skills/nextprob/assets/settings-demo/.claude/
+!bundled-skills/nextprob/assets/settings-demo/.claude/**
+!bundled-skills/nextprob/assets/settings-demo/CLAUDE.md
+
